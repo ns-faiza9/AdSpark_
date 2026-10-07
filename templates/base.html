@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}AdSpark — Production ML CTR Dashboard{% endblock %}</title>
+  <title>{% block title %}AdSpark — Production ML & Mathematical CTR Suite{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.2">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -19,7 +22,7 @@
       <div class="brand-logo">As</div>
       <div class="brand-text">
         <div class="brand-name">AdSpark ML</div>
-        <div class="brand-tagline">CO1–CO5 ACADEMIC SUITE</div>
+        <div class="brand-tagline">CTR PREDICTION & ML SUITE</div>
       </div>
     </div>
 
@@ -103,11 +106,27 @@
         <span class="nav-num">19</span><span>💡 SHAP Explainability</span>
       </a>
 
-      <!-- INTERACTIVE TOOL (TAB 20) -->
-      <div class="sidebar-section-label" style="color: #a78bfa;">🛠️ INTERACTIVE TOOL</div>
+      <!-- ADVANCED CTR MATHEMATICS & ONLINE LEARNING -->
+      <div class="sidebar-section-label" style="color: #e879f9;">⚡ ADVANCED CTR MATH</div>
+
+      <a href="{{ url_for('ftrl') }}" class="nav-item {% if active_page == 'ftrl' %}active{% endif %}">
+        <span class="nav-num">20</span><span>⚡ FTRL-Proximal Online</span>
+      </a>
+      <a href="{{ url_for('factorization_machines') }}" class="nav-item {% if active_page == 'factorization_machines' %}active{% endif %}">
+        <span class="nav-num">21</span><span>🧩 Factorization Machines</span>
+      </a>
+      <a href="{{ url_for('bayesian_iv') }}" class="nav-item {% if active_page == 'bayesian_iv' %}active{% endif %}">
+        <span class="nav-num">22</span><span>🔮 Empirical Bayes & IV</span>
+      </a>
+      <a href="{{ url_for('math_foundations') }}" class="nav-item {% if active_page == 'math_foundations' %}active{% endif %}">
+        <span class="nav-num">23</span><span>📐 Math Compendium</span>
+      </a>
+
+      <!-- INTERACTIVE TOOL (TAB 24) -->
+      <div class="sidebar-section-label" style="color: #a78bfa;">🛠️ INTERACTIVE CTR SANDBOX</div>
 
       <a href="{{ url_for('predict_page') }}" class="nav-item {% if active_page == 'predict' %}active{% endif %}">
-        <span class="nav-num">20</span><span>🚀 Real-Time Sandbox</span>
+        <span class="nav-num">24</span><span>🚀 Real-Time Sandbox</span>
       </a>
     </nav>
 
@@ -115,7 +134,7 @@
       <button class="theme-toggle" id="theme-toggle">
         <span id="theme-toggle-text">☀️ Light Mode</span>
       </button>
-      <p>Flask Web App • ML CO1–CO5<br>AdSpark Academic Suite</p>
+      <p>Flask Web App • AdSpark Suite<br>Theoretical & Applied ML</p>
     </div>
   </aside>
 
@@ -125,7 +144,7 @@
   </main>
 </div>
 
-<script src="{{ url_for('static', filename='js/main.js') }}?v=2.0"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}?v=2.2"></script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

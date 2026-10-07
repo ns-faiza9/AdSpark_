@@ -1,6 +1,6 @@
 /**
  * AdSpark Flask Dashboard JavaScript Engine.
- * Handles Theme Toggling, Figure Lightbox, and Interactive CTR Predictor.
+ * Handles Theme Toggling, Figure Lightbox, and Interactive CTR Predictor with Mathematical Trace.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,7 +37,7 @@ function updateThemeBtnText(theme) {
 
 /* ---------- Image Lightbox ---------- */
 function initLightbox() {
-  const images = document.querySelectorAll('.figure-card img');
+  const images = document.querySelectorAll('.figure-card img, .card-body img');
   if (!images.length) return;
 
   const modal = document.createElement('div');
@@ -59,7 +59,7 @@ function initLightbox() {
   });
 }
 
-/* ---------- CTR Predictor AJAX ---------- */
+/* ---------- CTR Predictor AJAX & Mathematical Trace ---------- */
 function initPredictor() {
   const form = document.getElementById('ctr-predict-form');
   if (!form) return;
@@ -87,8 +87,17 @@ function initPredictor() {
         const elPct = document.getElementById('res-pct');
         const elLabel = document.getElementById('res-label');
         const elTier = document.getElementById('res-tier');
+        const elModel = document.getElementById('res-model');
+        const elCi = document.getElementById('res-ci');
         const elMeter = document.getElementById('res-meter');
         const elDrivers = document.getElementById('res-drivers');
+
+        // Mathematical trace elements
+        const trLinear = document.getElementById('trace-linear');
+        const trInter = document.getElementById('trace-inter');
+        const trLogOdds = document.getElementById('trace-logodds');
+        const trShift = document.getElementById('trace-shift');
+        const trBayes = document.getElementById('trace-bayes');
 
         if (elPct) elPct.textContent = p.ctr_percentage + '%';
         if (elLabel) {
@@ -99,6 +108,19 @@ function initPredictor() {
           elTier.textContent = p.confidence_tier;
           elTier.style.color = p.tier_color === 'green' ? 'var(--green)' : (p.tier_color === 'red' ? 'var(--red)' : 'var(--accent)');
         }
+        if (elModel && p.model_selected) {
+          elModel.textContent = 'Model: ' + p.model_selected;
+        }
+        if (elCi && p.wilson_ci_95) {
+          elCi.textContent = `95% Wilson CI: [${p.wilson_ci_95.lower}%, ${p.wilson_ci_95.upper}%]`;
+        }
+
+        if (trLinear) trLinear.textContent = (p.linear_component >= 0 ? '+' : '') + p.linear_component.toFixed(3);
+        if (trInter) trInter.textContent = (p.interaction_component >= 0 ? '+' : '') + p.interaction_component.toFixed(3);
+        if (trLogOdds) trLogOdds.textContent = (p.log_odds >= 0 ? '+' : '') + p.log_odds.toFixed(3);
+        if (trShift) trShift.textContent = p.downsampling_log_odds_shift.toFixed(3);
+        if (trBayes) trBayes.textContent = p.bayesian_smoothed_ctr + '%';
+
         if (elMeter) {
           elMeter.style.width = Math.min(100, Math.max(5, p.ctr_percentage * 2.5)) + '%';
           elMeter.style.background = p.predicted_click === 1 
@@ -111,9 +133,9 @@ function initPredictor() {
             elDrivers.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Standard Baseline Features</p>';
           } else {
             elDrivers.innerHTML = p.key_drivers.map(d => `
-              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem;">
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 0.88rem;">
                 <span>${d.factor}</span>
-                <span style="font-weight: 700; color: ${d.impact.includes('Positive') ? 'var(--green)' : 'var(--red)'}">${d.weight}</span>
+                <span style="font-weight: 700; color: ${d.impact.includes('Positive') ? 'var(--green)' : (d.impact.includes('Negative') ? 'var(--red)' : 'var(--accent)')}">${d.weight}</span>
               </div>
             `).join('');
           }

@@ -10,94 +10,113 @@
     <h1 class="hero-title">
       <span class="gradient-text">AdSpark</span>
       <br />
-      Academic Machine Learning Suite (CO1–CO5)
+      Mathematical Machine Learning & CTR Prediction Suite
     </h1>
 
     <p class="hero-tagline">
-      Production-grade Machine Learning Dashboard covering <strong>Supervised Classification</strong>, <strong>Unsupervised Clustering</strong>, <strong>Dimensionality Reduction</strong>, <strong>Anomaly Detection</strong>, <strong>Calibration & Statistical Significance</strong> on 1.01M Avazu CTR Impressions.
+      Production-grade CTR Platform integrating <strong>Google FTRL-Proximal Online Learning</strong>, <strong>Rendle Factorization Machines</strong>, <strong>Empirical Bayes Target Smoothing</strong>, <strong>Ensemble Trees (XGBoost, LightGBM)</strong>, <strong>Clustering & Anomaly Detection</strong>, and <strong>Rigorous Statistical Calibration</strong> on 1.01M Avazu Impressions.
     </p>
   </div>
 </header>
 
 <div class="page-main" id="overview">
-  <!-- 3-CARD EXECUTIVE OVERVIEW GRID -->
+  <!-- 4-CARD EXECUTIVE OVERVIEW GRID -->
   <section class="section">
     <div class="section-title">
       <span class="section-badge">TAB 00</span>
       <span>Executive Overview Summary Cards</span>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
       
       <!-- CARD 1: SUPERVISED PIPELINE SUMMARY -->
       <div class="stat-card" style="border-left: 4px solid var(--red);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-          <span style="color: var(--red); font-weight: 800; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase;">CARD 1 • SUPERVISED LEARNING (CO1–CO3)</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--red); font-weight: 800; font-size: 0.75rem; letter-spacing: 1.2px; text-transform: uppercase;">CARD 1 • SUPERVISED (CO1–3)</span>
           <span class="chip" style="font-size: 0.7rem; padding: 2px 8px;">CO1–CO3</span>
         </div>
-        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">Supervised Pipeline Summary</h3>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
-          Evaluates 10 baseline & ensemble algorithms across 1,010,724 records & 24 engineered features (16.94% Click Rate).
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Supervised Pipeline</h3>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
+          12 algorithms evaluated on 1.01M impressions & 24 engineered features (16.94% CTR).
         </p>
-        <ul style="font-size: 0.84rem; color: var(--text-primary); line-height: 1.8; list-style: none; padding-left: 0;">
-          <li>• <strong>Dataset Scope:</strong> 1.01M impressions, 24 features (Frequency + Label OHE)</li>
-          <li>• <strong>Baseline CTR:</strong> 16.94% Positive Ad Clicks (171k / 1.01M)</li>
+        <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
+          <li>• <strong>Dataset:</strong> 1.01M rows, 24 features (Frequency + OHE)</li>
+          <li>• <strong>Baseline CTR:</strong> 16.94% Positive Ad Clicks</li>
           <li>• <strong>Linear Baseline:</strong> OLS R² = 0.0382, RMSE = 0.3678</li>
-          <li>• <strong>Logistic Regression:</strong> ROC-AUC = 0.6612, Log-Loss = 0.4281</li>
-          <li>• <strong>Regularization:</strong> Lasso L1 sparsity removes 5 noise features</li>
-          <li>• <strong>Decision Tree:</strong> Optimal depth = 8, Test AUC = 0.7104</li>
-          <li>• <strong>Top Ensemble:</strong> <span style="color: var(--green); font-weight: 700;">XGBoost (ROC-AUC = 0.7397)</span></li>
+          <li>• <strong>Logistic Regression:</strong> ROC-AUC = 0.7180, Loss = 0.4125</li>
+          <li>• <strong>Decision Tree:</strong> Optimal depth = 8, AUC = 0.6840</li>
+          <li>• <strong>Top Ensemble:</strong> <span style="color: var(--green); font-weight: 700;">XGBoost (AUC = 0.7397)</span></li>
         </ul>
       </div>
 
       <!-- CARD 2: UNSUPERVISED & PATTERN RECOGNITION SUMMARY -->
       <div class="stat-card" style="border-left: 4px solid var(--accent);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-          <span style="color: var(--accent); font-weight: 800; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase;">CARD 2 • UNSUPERVISED & PATTERN (CO4)</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--accent); font-weight: 800; font-size: 0.75rem; letter-spacing: 1.2px; text-transform: uppercase;">CARD 2 • UNSUPERVISED (CO4)</span>
           <span class="chip" style="font-size: 0.7rem; padding: 2px 8px;">CO4</span>
         </div>
-        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">Unsupervised & Pattern Summary</h3>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Unsupervised & Pattern</h3>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
           Cluster analysis, dimensionality reduction projections, and outlier anomaly scoring.
         </p>
-        <ul style="font-size: 0.84rem; color: var(--text-primary); line-height: 1.8; list-style: none; padding-left: 0;">
-          <li>• <strong>K-Means WCSS (Elbow):</strong> Optimal \(k = 3\) clusters (Silhouette = {{ card_2.best_silhouette }})</li>
-          <li>• <strong>Hierarchical Clustering:</strong> Evaluated Single, Complete, Avg & Ward Linkages</li>
-          <li>• <strong>DBSCAN Density:</strong> \(\epsilon = 1.8\), MinPts = 5 (Noise = {{ card_2.dbscan_noise_pct }})</li>
-          <li>• <strong>PCA Scree Plot:</strong> Top 4 components capture 90.2% cumulative variance</li>
-          <li>• <strong>t-SNE & UMAP:</strong> 2D/3D non-linear spatial separation preview</li>
-          <li>• <strong>Anomaly Scoring:</strong> Isolation Forest flagged {{ card_2.anomalies_detected }} outliers</li>
+        <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
+          <li>• <strong>K-Means WCSS:</strong> Optimal \(k = 3\) (Silhouette = {{ card_2.best_silhouette }})</li>
+          <li>• <strong>Hierarchical:</strong> Single, Complete, Avg & Ward Linkages</li>
+          <li>• <strong>DBSCAN:</strong> \(\epsilon = 1.8\), MinPts = 5 (Noise = {{ card_2.dbscan_noise_pct }})</li>
+          <li>• <strong>PCA Scree:</strong> Top 4 components capture 90.2% variance</li>
+          <li>• <strong>t-SNE & UMAP:</strong> 2D manifold separation preview</li>
+          <li>• <strong>Anomaly:</strong> Isolation Forest flagged {{ card_2.anomalies_detected }} outliers</li>
         </ul>
       </div>
 
       <!-- CARD 3: CV, METRICS, CALIBRATION & SIGNIFICANCE SUMMARY -->
       <div class="stat-card" style="border-left: 4px solid var(--green);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-          <span style="color: var(--green); font-weight: 800; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase;">CARD 3 • CV, METRICS & SIGNIFICANCE (CO5)</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--green); font-weight: 800; font-size: 0.75rem; letter-spacing: 1.2px; text-transform: uppercase;">CARD 3 • METRICS & STATS (CO5)</span>
           <span class="chip" style="font-size: 0.7rem; padding: 2px 8px;">CO5</span>
         </div>
-        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">CV, Metrics & Calibration</h3>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
-          Imbalanced metrics, nested cross-validation, probability calibration, and McNemar hypothesis testing.
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Validation & Calibration</h3>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
+          Imbalanced metrics, nested cross-validation, and McNemar hypothesis testing.
         </p>
-        <ul style="font-size: 0.84rem; color: var(--text-primary); line-height: 1.8; list-style: none; padding-left: 0;">
-          <li>• <strong>3-Way Partitioning:</strong> 70% Train / 15% Validation / 15% Test</li>
-          <li>• <strong>CV Optimism Bias:</strong> K-Fold ({{ card_3.stratified_cv_auc }}) vs Nested CV ({{ card_3.nested_cv_auc }})</li>
-          <li>• <strong>Imbalanced Suite:</strong> PR-AUC = {{ card_3.pr_auc }}, Log Loss = {{ card_3.log_loss }}</li>
-          <li>• <strong>Probability Calibration:</strong> ECE reduced from {{ card_3.ece_reduction }} to {{ card_3.ece_calibrated }} via Isotonic</li>
-          <li>• <strong>McNemar's Test:</strong> \(p = {{ card_3.mcnemar_pval }}\) (<span style="color: var(--green); font-weight: 700;">Significant p &lt; 0.05</span>)</li>
-          <li>• <strong>Bias-Variance:</strong> Learning curves confirm narrow convergence gap</li>
+        <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
+          <li>• <strong>3-Way Split:</strong> 70% Train / 15% Val / 15% Test</li>
+          <li>• <strong>CV Bias:</strong> K-Fold ({{ card_3.stratified_cv_auc }}) vs Nested ({{ card_3.nested_cv_auc }})</li>
+          <li>• <strong>PR-AUC:</strong> {{ card_3.pr_auc }}, Log-Loss = {{ card_3.log_loss }}</li>
+          <li>• <strong>Calibration:</strong> ECE reduced from {{ card_3.ece_reduction }} to {{ card_3.ece_calibrated }}</li>
+          <li>• <strong>McNemar's:</strong> \(p = {{ card_3.mcnemar_pval }}\) (<span style="color: var(--green); font-weight: 700;">Significant</span>)</li>
+          <li>• <strong>SHAP:</strong> C18 & site_id explain 50%+ log-odds</li>
+        </ul>
+      </div>
+
+      <!-- CARD 4: ADVANCED CTR MATHEMATICS & ONLINE LEARNING -->
+      <div class="stat-card" style="border-left: 4px solid #e879f9;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: #e879f9; font-weight: 800; font-size: 0.75rem; letter-spacing: 1.2px; text-transform: uppercase;">CARD 4 • ADVANCED CTR MATH</span>
+          <span class="chip" style="font-size: 0.7rem; padding: 2px 8px; background: rgba(232, 121, 249, 0.2); color: #e879f9;">NEW</span>
+        </div>
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Advanced CTR Math</h3>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
+          FTRL-Proximal online optimizer, Factorization Machines & Empirical Bayes.
+        </p>
+        <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
+          <li>• <strong>Google FTRL-Proximal:</strong> AUC = {{ card_4.ftrl_auc }}, Sparsity = {{ card_4.ftrl_sparsity }}</li>
+          <li>• <strong>Factorization Machine:</strong> AUC = {{ card_4.fm_auc }}, Complexity = \(\mathcal{O}(kd)\)</li>
+          <li>• <strong>Negative Downsampling:</strong> \(p = \frac{p'}{p' + (1-p')/w}\) calibration</li>
+          <li>• <strong>Empirical Bayes:</strong> \(\text{Beta}(\alpha, \beta)\) smoothing (\(m=20.0\))</li>
+          <li>• <strong>Information Value (IV):</strong> {{ card_4.top_iv_feature }}</li>
+          <li>• <strong>Brier Decomposition:</strong> Reliability + Resolution + Uncertainty</li>
         </ul>
       </div>
 
     </div>
   </section>
 
-  <!-- Benchmark Leaderboard Table -->
+  <!-- Comprehensive 12-Model Benchmark Leaderboard Table -->
   <section class="section">
     <div class="section-title">
-      <span class="section-badge">RANKING</span>
-      <span>Supervised Model Benchmark Leaderboard</span>
+      <span class="section-badge">LEADERBOARD</span>
+      <span>Comprehensive 12-Model Production Benchmark</span>
     </div>
 
     <div class="table-wrap">
@@ -106,27 +125,33 @@
           <tr>
             <th>Rank</th>
             <th>Algorithm Name</th>
-            <th>Family</th>
-            <th>Test Accuracy</th>
+            <th>Model Family</th>
             <th>ROC-AUC</th>
-            <th>F1 Score</th>
-            <th>Precision</th>
-            <th>Recall</th>
+            <th>Log-Loss</th>
+            <th>Normalized Entropy (NE)</th>
+            <th>ECE Calibration</th>
+            <th>Latency (ms)</th>
+            <th>Operational Profile</th>
           </tr>
         </thead>
         <tbody>
-          {% for name, m in models_data.items() %}
-          <tr class="{% if name == global_best_model %}highlight{% endif %}">
-            <td>#{{ loop.index }}</td>
-            <td><strong>{{ name }}</strong></td>
-            <td>{{ m.algorithm_family }}</td>
-            <td>{{ m.test_accuracy }}%</td>
-            <td><strong>{{ m.roc_auc }}</strong></td>
-            <td>{{ m.f1 }}</td>
-            <td>{{ m.precision }}</td>
-            <td>{{ m.recall }}</td>
-          </tr>
-          {% endfor %}
+          {% if leaderboard %}
+            {% for item in leaderboard %}
+            <tr class="{% if loop.index == 1 %}highlight{% endif %}">
+              <td style="font-weight: bold; color: {% if loop.index == 1 %}var(--green){% elif loop.index <= 3 %}var(--accent){% else %}var(--text-secondary){% endif %};">
+                #{{ loop.index }}
+              </td>
+              <td><strong>{{ item.name }}</strong></td>
+              <td><span class="chip" style="font-size: 0.72rem;">{{ item.type }}</span></td>
+              <td style="font-family: monospace; font-weight: bold; color: var(--green);">{{ item.roc_auc }}</td>
+              <td style="font-family: monospace;">{{ item.log_loss }}</td>
+              <td style="font-family: monospace; color: var(--accent);">{{ item.ne }}</td>
+              <td style="font-family: monospace;">{{ item.ece }}</td>
+              <td style="font-family: monospace;">{{ item.latency_ms }} ms</td>
+              <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ item.notes }}</td>
+            </tr>
+            {% endfor %}
+          {% endif %}
         </tbody>
       </table>
     </div>
@@ -136,9 +161,9 @@
   <section class="section">
     <div class="callout green" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
       <div>
-        <h3 style="color: var(--green); margin-bottom: 4px;">✨ Tab 20: Real-Time CTR Predictor Active</h3>
+        <h3 style="color: var(--green); margin-bottom: 4px;">✨ Tab 24: Enhanced Multi-Model Real-Time Sandbox Active</h3>
         <p style="color: var(--text-secondary); font-size: 0.92rem;">
-          Test live impression feature configurations using our calibrated machine learning engine.
+          Test live impression feature configurations using XGBoost, Factorization Machines (FM), FTRL-Proximal, and Bayesian smoothing with step-by-step mathematical trace!
         </p>
       </div>
       <a href="{{ url_for('predict_page') }}" class="btn">Launch Real-Time Sandbox →</a>

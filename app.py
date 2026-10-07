@@ -1,9 +1,11 @@
 """AdSpark CTR Prediction — Flask Web Application.
 
-Covers Machine Learning Course Outcomes CO1 through CO5 across 20 modular tabs:
+Covers Machine Learning Course Outcomes CO1 through CO5 and Advanced CTR Mathematics
+across 24 modular tabs and deep theoretical foundations:
 Supervised Learning, Unsupervised Clustering, Dimensionality Reduction, Anomaly Detection,
 Validation Strategies, Imbalanced Metrics, Probability Calibration, McNemar Significance,
-Learning Curves, and SHAP Explainability.
+Learning Curves, SHAP Explainability, Google FTRL-Proximal, Factorization Machines (FM),
+Empirical Bayes Smoothing, and Negative Downsampling Calibration.
 """
 import json
 import os
@@ -39,13 +41,14 @@ def inject_global_data():
 
 
 # =============================================================================
-# 00. Overview Dashboard (3-Card Grid + Leaderboard)
+# 00. Overview Dashboard (4-Card Grid + 12-Model Leaderboard)
 # =============================================================================
 @app.route("/")
 def dashboard():
     cards = ml_engine.get_executive_summary_cards()
     ensemble_summary = load_summary("08_ensemble_summary.json")
     models_data = ensemble_summary.get("models", {})
+    leaderboard = ml_engine.get_full_leaderboard()
 
     return render_template(
         "dashboard.html",
@@ -53,7 +56,9 @@ def dashboard():
         card_1=cards["card_1"],
         card_2=cards["card_2"],
         card_3=cards["card_3"],
+        card_4=cards.get("card_4", {}),
         models_data=models_data,
+        leaderboard=leaderboard,
         ensemble_summary=ensemble_summary,
     )
 
@@ -152,7 +157,27 @@ def explainability():
 
 
 # =============================================================================
-# INTERACTIVE TOOL (TAB 20) & API ENDPOINTS
+# ADVANCED CTR MATHEMATICS & SPECIALIZED ALGORITHMS
+# =============================================================================
+@app.route("/ftrl")
+def ftrl():
+    return render_template("ftrl.html", active_page="ftrl", summary=load_summary("20_ftrl_summary.json"))
+
+@app.route("/factorization-machines")
+def factorization_machines():
+    return render_template("factorization_machines.html", active_page="factorization_machines", summary=load_summary("21_factorization_machine_summary.json"))
+
+@app.route("/bayesian-iv")
+def bayesian_iv():
+    return render_template("bayesian_iv.html", active_page="bayesian_iv", summary=load_summary("22_bayesian_iv_summary.json"))
+
+@app.route("/math-foundations")
+def math_foundations():
+    return render_template("math_foundations.html", active_page="math_foundations")
+
+
+# =============================================================================
+# INTERACTIVE TOOL & API ENDPOINTS
 # =============================================================================
 @app.route("/predict")
 def predict_page():

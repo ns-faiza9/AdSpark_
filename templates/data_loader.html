@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Data Loading & Inspection — AdSpark CTR{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="kicker">Stage 01</div>
+  <h1>Data Loading & <span class="gradient-text">Dataset Inspection</span></h1>
+  <p class="subtitle">
+    Loading and validating the 1.01M sample Avazu digital advertisement impression dataset. Downcasting data types and verifying data integrity.
+  </p>
+</header>
+
+<div class="page-main">
+  <!-- Key Stats Grid -->
+  <section class="section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Rows</div>
+        <div class="stat-value">{{ summary.rows | default(1010724) }}</div>
+        <div class="stat-sub">Ad impression events</div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="stat-label">Total Columns</div>
+        <div class="stat-value">{{ summary.columns | default(24) }}</div>
+        <div class="stat-sub">Features & Target</div>
+      </div>
+      <div class="stat-card accent-purple">
+        <div class="stat-label">Memory Usage</div>
+        <div class="stat-value">{{ summary.memory_mb | default(639.79) }} MB</div>
+        <div class="stat-sub">Optimized memory footprint</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="stat-label">Missing Values</div>
+        <div class="stat-value">{{ summary.missing_total | default(0) }}</div>
+        <div class="stat-sub">Clean dataset with 0 nulls</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Class Imbalance Callout -->
+  <section class="section">
+    <div class="callout blue">
+      <div class="callout-title">Class Distribution:</div>
+      Out of 1,010,724 total impressions, <strong>171,209 (16.94%)</strong> resulted in an ad click (1), while <strong>839,515 (83.06%)</strong> were non-clicks (0). This ~5:1 class imbalance requires stratified splitting and balanced loss weighting during model training.
+    </div>
+  </section>
+
+  <!-- Figures Gallery -->
+  <section class="section">
+    <div class="section-title">
+      <span class="section-badge">VISUALS</span>
+      <span>Target Distribution Analysis</span>
+    </div>
+
+    <div class="figure-grid">
+      <div class="figure-card">
+        <h3>Click Class Distribution (Target Variable)</h3>
+        <p class="purpose">Bar chart and pie breakdown of CTR positive vs negative classes.</p>
+        <img src="{{ url_for('serve_figures', filename='eda_01_target_distribution.png') }}" alt="Target Class Distribution">
+        <div class="observation">
+          <div class="obs-label">INSIGHT</div>
+          The 16.94% click baseline serves as our benchmark threshold for classification decision boundaries.
+        </div>
+      </div>
+
+      <div class="figure-card">
+        <h3>Feature Schema & Column Dtypes</h3>
+        <p class="purpose">24 categorical and numeric fields extracted from raw web log files.</p>
+        <div class="table-wrap" style="max-height: 380px; overflow-y: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Field Name</th>
+                <th>Description</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>Ad impression unique identifier</td><td>String / uint64</td></tr>
+              <tr><td><code>click</code></td><td>Target (0 = No Click, 1 = Click)</td><td>int8</td></tr>
+              <tr><td><code>hour</code></td><td>Timestamp YYMMDDHH</td><td>int32</td></tr>
+              <tr><td><code>C1</code></td><td>Anonymized categorical feature 1</td><td>int16</td></tr>
+              <tr><td><code>banner_pos</code></td><td>Banner placement position (0-7)</td><td>int8</td></tr>
+              <tr><td><code>site_id</code></td><td>Website ID</td><td>String</td></tr>
+              <tr><td><code>site_domain</code></td><td>Website domain ID</td><td>String</td></tr>
+              <tr><td><code>site_category</code></td><td>Website category ID</td><td>String</td></tr>
+              <tr><td><code>app_id</code></td><td>Application ID</td><td>String</td></tr>
+              <tr><td><code>app_domain</code></td><td>Application domain ID</td><td>String</td></tr>
+              <tr><td><code>app_category</code></td><td>Application category ID</td><td>String</td></tr>
+              <tr><td><code>device_id</code></td><td>Mobile device ID</td><td>String</td></tr>
+              <tr><td><code>device_ip</code></td><td>User IP address</td><td>String</td></tr>
+              <tr><td><code>device_model</code></td><td>Device hardware model</td><td>String</td></tr>
+              <tr><td><code>device_type</code></td><td>Device type code (0, 1, 4, 5)</td><td>int8</td></tr>
+              <tr><td><code>device_conn_type</code></td><td>Network connection type</td><td>int8</td></tr>
+              <tr><td><code>C14 - C21</code></td><td>Anonymized categorical signals</td><td>int16 / int32</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Python Code Snippet -->
+  <section class="section">
+    <div class="section-title">
+      <span class="section-badge">CODE</span>
+      <span>Stage 01 Script Implementation</span>
+    </div>
+    <pre><code>import pandas as pd
+from common import DATA_PATH, save_json
+
+def load_data():
+    df = pd.read_csv(DATA_PATH)
+    print(f"Loaded dataset with {len(df):,} rows and {len(df.columns)} columns.")
+    
+    summary = {
+        "rows": len(df),
+        "columns": len(df.columns),
+        "click_rate": float(df['click'].mean()),
+        "missing_total": int(df.isnull().sum().sum()),
+        "memory_mb": round(df.memory_usage(deep=True).sum() / 1e6, 2)
+    }
+    save_json("01_data_loading_summary.json", summary)
+    return df
+
+if __name__ == "__main__":
+    load_data()</code></pre>
+  </section>
+</div>
+{% endblock %}

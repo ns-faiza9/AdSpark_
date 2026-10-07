@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Decision Tree — AdSpark CTR{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="kicker">Stage 07</div>
+  <h1>Decision Tree <span class="gradient-text">Non-Linear Modeling</span></h1>
+  <p class="subtitle">
+    Non-linear rule-based classification using Decision Tree Classifiers. Analyzing tree depth constraints, Gini impurity splits, and feature importance.
+  </p>
+</header>
+
+<div class="page-main">
+  <!-- Key Stats -->
+  <section class="section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Optimal Max Depth</div>
+        <div class="stat-value">8</div>
+        <div class="stat-sub">Prevents leaf node overfitting</div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="stat-label">Decision Tree AUC</div>
+        <div class="stat-value">0.7104</div>
+        <div class="stat-sub">Test ROC-AUC score</div>
+      </div>
+      <div class="stat-card accent-purple">
+        <div class="stat-label">Top Split Feature</div>
+        <div class="stat-value">C18_enc</div>
+        <div class="stat-sub">Highest Gini gain</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="stat-label">Test Accuracy</div>
+        <div class="stat-value">64.52%</div>
+        <div class="stat-sub">Balanced class weighting</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Figures Gallery -->
+  <section class="section">
+    <div class="section-title">
+      <span class="section-badge">CHARTS</span>
+      <span>Decision Tree Rules & Hyperparameters</span>
+    </div>
+
+    <div class="figure-grid">
+      <div class="figure-card">
+        <h3>Tree Depth vs ROC-AUC (Overfitting Analysis)</h3>
+        <p class="purpose">Train vs Test AUC score across tree depths 2 to 20.</p>
+        <img src="{{ url_for('serve_figures', filename='dt_04_depth_vs_auc.png') }}" alt="Tree Depth Tuning">
+        <div class="observation">
+          <div class="obs-label">OVERFITTING DYNAMICS</div>
+          Unconstrained trees (depth > 15) suffer severe overfitting (Train AUC 0.95 vs Test AUC 0.58). Constraining depth to 8 maximizes generalization AUC (0.7104).
+        </div>
+      </div>
+
+      <div class="figure-card">
+        <h3>Decision Tree Feature Importances</h3>
+        <p class="purpose">Gini impurity reduction attributed to each feature.</p>
+        <img src="{{ url_for('serve_figures', filename='dt_02_feature_importance.png') }}" alt="Decision Tree Feature Importance">
+        <div class="observation">
+          <div class="obs-label">TOP DRIVERS</div>
+          Feature <code>C18_enc</code> accounts for 24.5% of total split importance, followed by <code>site_id_freq</code> (14.2%) and <code>C16_enc</code> (11.8%).
+        </div>
+      </div>
+
+      <div class="figure-card full-width">
+        <h3>Decision Tree Structure Visualization</h3>
+        <p class="purpose">Top branches of the trained Decision Tree classifier.</p>
+        <img src="{{ url_for('serve_figures', filename='dt_01_tree_visualization.png') }}" alt="Tree Visualization">
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

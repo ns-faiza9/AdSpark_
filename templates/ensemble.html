@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Ensemble Learning — AdSpark CTR{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="kicker">Stage 08 — Final Benchmark</div>
+  <h1>Ensemble Learning & <span class="gradient-text">Model Comparison</span></h1>
+  <p class="subtitle">
+    Benchmarking Bagging (Random Forest) and Boosting (AdaBoost, Gradient Boosting, LightGBM, XGBoost) models to achieve state-of-the-art ad click prediction performance.
+  </p>
+</header>
+
+<div class="page-main">
+  <!-- Key Stats -->
+  <section class="section">
+    <div class="stats-grid">
+      <div class="stat-card accent-green">
+        <div class="stat-label">Best Model</div>
+        <div class="stat-value">XGBoost</div>
+        <div class="stat-sub">ROC-AUC: 0.7397</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Runner-Up Model</div>
+        <div class="stat-value">LightGBM</div>
+        <div class="stat-sub">ROC-AUC: 0.7391</div>
+      </div>
+      <div class="stat-card accent-purple">
+        <div class="stat-label">Random Forest AUC</div>
+        <div class="stat-value">0.7225</div>
+        <div class="stat-sub">Bagging Ensemble</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="stat-label">Test Evaluation Set</div>
+        <div class="stat-value">202,145</div>
+        <div class="stat-sub">Unseen holdout impressions</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Complete Ensemble Leaderboard -->
+  <section class="section">
+    <div class="section-title">
+      <span class="section-badge">BENCHMARK</span>
+      <span>Ensemble Models Performance Leaderboard</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Model Name</th>
+            <th>Family</th>
+            <th>Train Acc</th>
+            <th>Test Acc</th>
+            <th>ROC-AUC</th>
+            <th>F1 Score</th>
+            <th>Precision</th>
+            <th>Recall</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if summary and summary.models %}
+            {% for name, m in summary.models.items() %}
+            <tr class="{% if name == summary.best_model %}highlight{% endif %}">
+              <td><strong>{{ name }}</strong></td>
+              <td>{{ m.algorithm_family }}</td>
+              <td>{{ m.train_accuracy }}%</td>
+              <td>{{ m.test_accuracy }}%</td>
+              <td><strong>{{ m.roc_auc }}</strong></td>
+              <td>{{ m.f1 }}</td>
+              <td>{{ m.precision }}</td>
+              <td>{{ m.recall }}</td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Figures Gallery -->
+  <section class="section">
+    <div class="section-title">
+      <span class="section-badge">CHARTS</span>
+      <span>Ensemble Comparative Visualizations</span>
+    </div>
+
+    <div class="figure-grid">
+      <div class="figure-card">
+        <h3>Ensemble ROC Curves</h3>
+        <p class="purpose">ROC curves comparing Random Forest, AdaBoost, GBDT, LightGBM, and XGBoost.</p>
+        <img src="{{ url_for('serve_figures', filename='ens_01_roc_comparison.png') }}" alt="Ensemble ROC Curves">
+        <div class="observation">
+          <div class="obs-label">BOOSTING ADVANTAGE</div>
+          Gradient boosting algorithms (XGBoost & LightGBM) build sequential trees that specifically target hard-to-classify edge cases, achieving superior ROC-AUC curves.
+        </div>
+      </div>
+
+      <div class="figure-card">
+        <h3>ROC-AUC Metrics Comparison</h3>
+        <p class="purpose">Bar chart ranking models by Area Under the Curve.</p>
+        <img src="{{ url_for('serve_figures', filename='ens_02_auc_comparison.png') }}" alt="AUC Comparison">
+      </div>
+
+      <div class="figure-card">
+        <h3>Training vs Testing Accuracy</h3>
+        <p class="purpose">Accuracy metrics on train vs test splits to verify generalization.</p>
+        <img src="{{ url_for('serve_figures', filename='ens_03_accuracy_comparison.png') }}" alt="Accuracy Comparison">
+      </div>
+
+      <div class="figure-card">
+        <h3>Random Forest Feature Importances</h3>
+        <p class="purpose">Top 20 feature importances computed by Random Forest ensemble.</p>
+        <img src="{{ url_for('serve_figures', filename='ens_04_feature_importance_rf.png') }}" alt="RF Feature Importances">
+      </div>
+
+      <div class="figure-card full-width">
+        <h3>Confusion Matrix — Best Model (XGBoost)</h3>
+        <p class="purpose">Confusion matrix for the top performing XGBoost classifier on test set.</p>
+        <img src="{{ url_for('serve_figures', filename='ens_05_confusion_matrix_best.png') }}" alt="Best Model Confusion Matrix">
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

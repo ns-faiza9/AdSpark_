@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Regularization — AdSpark CTR{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="kicker">Stage 06</div>
+  <h1>Regularization & <span class="gradient-text">Hyperparameter Tuning</span></h1>
+  <p class="subtitle">
+    Controlling model capacity and preventing overfitting via L1 (Lasso) feature selection, L2 (Ridge) weight shrinking, and grid tuning across penalty parameter \( C = 1/\lambda \).
+  </p>
+</header>
+
+<div class="page-main">
+  <!-- Key Tuning Stats -->
+  <section class="section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">L1 Lasso Penalty</div>
+        <div class="stat-value">Zero Weights</div>
+        <div class="stat-sub">Sparsity feature selection</div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="stat-label">L2 Ridge Penalty</div>
+        <div class="stat-value">Shrunk Weights</div>
+        <div class="stat-sub">Multicollinearity stability</div>
+      </div>
+      <div class="stat-card accent-purple">
+        <div class="stat-label">Optimal Penalty C</div>
+        <div class="stat-value">1.0</div>
+        <div class="stat-sub">Best validation ROC-AUC</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="stat-label">Sparsity Rate</div>
+        <div class="stat-value">21.7%</div>
+        <div class="stat-sub">Features zeroed out under strong L1</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Figures Gallery -->
+  <section class="section">
+    <div class="section-title">
+      <span class="section-badge">PATHS</span>
+      <span>Regularization Paths & Tuning Curves</span>
+    </div>
+
+    <div class="figure-grid">
+      <div class="figure-card">
+        <h3>Lasso (L1) Coefficient Paths</h3>
+        <p class="purpose">Feature weight decay as regularization parameter increases.</p>
+        <img src="{{ url_for('serve_figures', filename='reg_01_lasso_paths.png') }}" alt="Lasso Coefficient Paths">
+        <div class="observation">
+          <div class="obs-label">SPARSITY SELECTION</div>
+          L1 penalty zeroed out noisy features like low-count device models while retaining high-impact variables <code>C16</code>, <code>C21</code>, and <code>banner_pos</code>.
+        </div>
+      </div>
+
+      <div class="figure-card">
+        <h3>RMSE Comparison Across C Values</h3>
+        <p class="purpose">Root Mean Squared Error vs Regularization strength C.</p>
+        <img src="{{ url_for('serve_figures', filename='reg_02_rmse_comparison.png') }}" alt="RMSE Tuning">
+      </div>
+
+      <div class="figure-card full-width">
+        <h3>ROC-AUC Curve Tuning Across Hyperparameters</h3>
+        <p class="purpose">Validation AUC curve comparing Ridge vs Lasso across C \(\in [10^{-3}, 10^2]\).</p>
+        <img src="{{ url_for('serve_figures', filename='reg_03_auc_comparison.png') }}" alt="AUC Tuning">
+        <div class="observation">
+          <div class="obs-label">OPTIMAL HYPERPARAMETER</div>
+          AUC peaks at \( C = 1.0 \), striking the perfect balance between variance reduction and bias preservation.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

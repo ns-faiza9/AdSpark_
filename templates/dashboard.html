@@ -14,20 +14,20 @@
     </h1>
 
     <p class="hero-tagline">
-      Production-grade CTR Platform integrating <strong>Google FTRL-Proximal Online Learning</strong>, <strong>Rendle Factorization Machines</strong>, <strong>Empirical Bayes Target Smoothing</strong>, <strong>Ensemble Trees (XGBoost, LightGBM)</strong>, <strong>Clustering & Anomaly Detection</strong>, and <strong>Rigorous Statistical Calibration</strong> on 1.01M Avazu Impressions.
+      Production-grade CTR Platform integrating <strong>Supervised Tree Ensembles (XGBoost, LightGBM, Random Forest, AdaBoost)</strong>, <strong>Linear & Regularized Baselines</strong>, <strong>Unsupervised Clustering (K-Means, DBSCAN, Hierarchical)</strong>, <strong>Dimensionality & Anomaly Detection</strong>, and <strong>Rigorous Statistical Calibration</strong> on 1.01M Avazu Impressions.
     </p>
   </div>
 </header>
 
 <div class="page-main" id="overview">
-  <!-- 4-CARD EXECUTIVE OVERVIEW GRID -->
+  <!-- 3-CARD EXECUTIVE OVERVIEW GRID -->
   <section class="section">
     <div class="section-title">
       <span class="section-badge">TAB 00</span>
       <span>Executive Overview Summary Cards</span>
     </div>
 
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px;">
       
       <!-- CARD 1: SUPERVISED PIPELINE SUMMARY -->
       <div class="stat-card" style="border-left: 4px solid var(--red);">
@@ -37,7 +37,7 @@
         </div>
         <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Supervised Pipeline</h3>
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
-          12 algorithms evaluated on {{ card_1.rows }} impressions & {{ card_1.features }} features ({{ card_1.baseline_ctr }} CTR).
+          {{ card_1.total_models | default(10) }} algorithms evaluated on {{ card_1.rows }} impressions & {{ card_1.features }} features ({{ card_1.baseline_ctr }} CTR).
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
           <li>• <strong>Dataset:</strong> {{ card_1.rows }} rows, {{ card_1.features }} features (Frequency + OHE)</li>
@@ -89,34 +89,14 @@
         </ul>
       </div>
 
-      <!-- CARD 4: ADVANCED CTR MATHEMATICS & ONLINE LEARNING -->
-      <div class="stat-card" style="border-left: 4px solid #e879f9;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <span style="color: #e879f9; font-weight: 800; font-size: 0.75rem; letter-spacing: 1.2px; text-transform: uppercase;">CARD 4 • ADVANCED CTR MATH</span>
-          <span class="chip" style="font-size: 0.7rem; padding: 2px 8px; background: rgba(232, 121, 249, 0.2); color: #e879f9;">NEW</span>
-        </div>
-        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Advanced CTR Math</h3>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
-          FTRL-Proximal online optimizer, Factorization Machines & Empirical Bayes.
-        </p>
-        <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
-          <li>• <strong>Google FTRL-Proximal:</strong> AUC = {{ card_4.ftrl_auc }}, Sparsity = {{ card_4.ftrl_sparsity }}</li>
-          <li>• <strong>Factorization Machine:</strong> AUC = {{ card_4.fm_auc }}, Complexity = \(\mathcal{O}(kd)\)</li>
-          <li>• <strong>Negative Downsampling:</strong> \(p = \frac{p'}{p' + (1-p')/w}\) calibration</li>
-          <li>• <strong>Empirical Bayes:</strong> \(\text{Beta}(\alpha, \beta)\) smoothing (\(m=20.0\))</li>
-          <li>• <strong>Information Value (IV):</strong> {{ card_4.top_iv_feature }}</li>
-          <li>• <strong>Brier Decomposition:</strong> Reliability + Resolution + Uncertainty</li>
-        </ul>
-      </div>
-
     </div>
   </section>
 
-  <!-- Comprehensive 12-Model Benchmark Leaderboard Table -->
+  <!-- Comprehensive 10-Model Benchmark Leaderboard Table -->
   <section class="section">
     <div class="section-title">
       <span class="section-badge">LEADERBOARD</span>
-      <span>Comprehensive 12-Model Production Benchmark</span>
+      <span>Comprehensive 10-Model Production Benchmark</span>
     </div>
 
     <div class="table-wrap">

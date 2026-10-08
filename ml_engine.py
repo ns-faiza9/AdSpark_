@@ -2,7 +2,7 @@
 
 Dynamically aggregates metrics, pipeline summaries, clustering outputs, calibration statistics,
 and model comparisons across Supervised Learning, Unsupervised Pattern Recognition,
-and Advanced CTR Mathematics (FTRL-Proximal, Factorization Machines, Empirical Bayes).
+and Validation & Calibration diagnostics.
 """
 import json
 import os
@@ -40,9 +40,6 @@ def get_executive_summary_cards() -> Dict[str, Any]:
     imb_sum = load_json("15_imbalanced_summary.json")
     cal_sum = load_json("16_calibration_summary.json")
     sig_sum = load_json("17_significance_summary.json")
-    ftrl_sum = load_json("20_ftrl_summary.json")
-    fm_sum = load_json("21_factorization_machine_summary.json")
-    bayes_sum = load_json("22_bayesian_iv_summary.json")
 
     best_model_name = ens_sum.get("best_model", "XGBoost")
     best_auc = ens_sum.get("models", {}).get(best_model_name, {}).get("roc_auc", 0.7397)
@@ -55,7 +52,7 @@ def get_executive_summary_cards() -> Dict[str, Any]:
         "baseline_ctr": f"{data_sum.get('click_rate', 0.1694) * 100:.2f}%",
         "best_model": best_model_name,
         "best_auc": best_auc,
-        "total_models": 12,
+        "total_models": 10,
         "ols_r2": lin_sum.get("r2", 0.0422),
         "ols_rmse": lin_sum.get("rmse", 0.3671),
         "logreg_auc": log_sum.get("roc_auc", 0.6468),
@@ -92,34 +89,20 @@ def get_executive_summary_cards() -> Dict[str, Any]:
         "significance": "p < 0.05 (Statistically Significant)" if sig_sum.get("statistically_significant", True) else "Not Significant",
     }
 
-    # Card 4: Advanced CTR Mathematics & Online Learning
-    card_4 = {
-        "title": "ADVANCED CTR MATH & ONLINE LEARNING",
-        "ftrl_sparsity": f"{ftrl_sum.get('exact_feature_sparsity_pct', 73.2)}%",
-        "ftrl_auc": f"{ftrl_sum.get('test_roc_auc', 0.7285):.4f}",
-        "fm_auc": f"{fm_sum.get('test_roc_auc', 0.7348):.4f}",
-        "fm_complexity": fm_sum.get("computational_complexity", {}).get("rendle_fast_trick", "O(k · d) Linear"),
-        "top_iv_feature": f"{bayes_sum.get('highest_iv_feature', 'banner_pos')} (IV = {bayes_sum.get('highest_iv_score', 0.3854)})",
-        "bayes_shrinkage": "Beta(alpha, beta) Prior m=20",
-    }
-
     return {
         "card_1": card_1,
         "card_2": card_2,
         "card_3": card_3,
-        "card_4": card_4,
     }
 
 
 def get_full_leaderboard() -> List[Dict[str, Any]]:
-    """Build the comprehensive 12-model comparative leaderboard dynamically from actual JSON summaries."""
+    """Build the comprehensive 10-model comparative leaderboard dynamically from actual JSON summaries."""
     lin_sum = load_json("04_linear_regression_summary.json")
     log_sum = load_json("05_logistic_regression_summary.json")
     reg_sum = load_json("06_regularization_summary.json")
     dt_sum = load_json("07_decision_tree_summary.json")
     ens_sum = load_json("08_ensemble_summary.json")
-    ftrl_sum = load_json("20_ftrl_summary.json")
-    fm_sum = load_json("21_factorization_machine_summary.json")
 
     ens_models = ens_sum.get("models", {})
     xgb = ens_models.get("XGBoost", {})
@@ -161,20 +144,6 @@ def get_full_leaderboard() -> List[Dict[str, Any]]:
             "notes": "Sub-millisecond inference with leaf-wise tree growth",
         },
         {
-            "name": "Factorization Machine (FM)",
-            "type": "Bilinear Interaction (Rendle)",
-            "roc_auc": round(float(fm_sum.get("test_roc_auc", 0.7348)), 4),
-            "log_loss": round(float(fm_sum.get("test_log_loss", 0.3985)), 4),
-            "accuracy": 82.90,
-            "f1": 0.3412,
-            "precision": 0.5820,
-            "recall": 0.2410,
-            "ne": round(float(fm_sum.get("normalized_cross_entropy_ne", 0.8712)), 4),
-            "ece": 0.0210,
-            "latency_ms": 0.35,
-            "notes": "O(k·d) linear time 2nd-order latent embeddings",
-        },
-        {
             "name": "Gradient Boosting (GBM)",
             "type": "Ensemble (Sequential Trees)",
             "roc_auc": round(float(gbm.get("roc_auc", 0.7287)), 4),
@@ -187,20 +156,6 @@ def get_full_leaderboard() -> List[Dict[str, Any]]:
             "ece": 0.0225,
             "latency_ms": 3.80,
             "notes": "Strong baseline; slower training cycle",
-        },
-        {
-            "name": "Google FTRL-Proximal",
-            "type": "Online Streaming Linear",
-            "roc_auc": round(float(ftrl_sum.get("test_roc_auc", 0.7285)), 4),
-            "log_loss": round(float(ftrl_sum.get("test_log_loss", 0.4042)), 4),
-            "accuracy": 81.65,
-            "f1": 0.3250,
-            "precision": 0.5410,
-            "recall": 0.2310,
-            "ne": round(float(ftrl_sum.get("normalized_cross_entropy_ne", 0.8842)), 4),
-            "ece": 0.0245,
-            "latency_ms": 0.12,
-            "notes": f"Single-pass online streaming; {ftrl_sum.get('exact_feature_sparsity_pct', 73.2)}% exact L1 feature sparsity",
         },
         {
             "name": "Random Forest Classifier",

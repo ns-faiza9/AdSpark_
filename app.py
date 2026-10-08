@@ -156,24 +156,6 @@ def explainability():
     return render_template("explainability.html", active_page="explainability", summary=load_summary("19_explainability_summary.json"))
 
 
-# =============================================================================
-# ADVANCED CTR MATHEMATICS & SPECIALIZED ALGORITHMS
-# =============================================================================
-@app.route("/ftrl")
-def ftrl():
-    return render_template("ftrl.html", active_page="ftrl", summary=load_summary("20_ftrl_summary.json"))
-
-@app.route("/factorization-machines")
-def factorization_machines():
-    return render_template("factorization_machines.html", active_page="factorization_machines", summary=load_summary("21_factorization_machine_summary.json"))
-
-@app.route("/bayesian-iv")
-def bayesian_iv():
-    return render_template("bayesian_iv.html", active_page="bayesian_iv", summary=load_summary("22_bayesian_iv_summary.json"))
-
-@app.route("/math-foundations")
-def math_foundations():
-    return render_template("math_foundations.html", active_page="math_foundations")
 
 
 # =============================================================================

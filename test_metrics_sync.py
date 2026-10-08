@@ -8,15 +8,14 @@ def test_all_metrics():
     c1 = cards['card_1']
     c2 = cards['card_2']
     c3 = cards['card_3']
-    c4 = cards['card_4']
 
     print("Card 1:", c1)
     print("Card 2:", c2)
     print("Card 3:", c3)
-    print("Card 4:", c4)
 
     assert c1['best_model'] == 'XGBoost', f"Expected XGBoost, got {c1['best_model']}"
     assert c1['best_auc'] == 0.7397, f"Expected 0.7397, got {c1['best_auc']}"
+    assert c1['total_models'] == 10, f"Expected 10, got {c1['total_models']}"
     assert c2['best_silhouette'] == 0.0653, f"Expected 0.0653, got {c2['best_silhouette']}"
     assert c2['dbscan_noise_pct'] == '70.8%', f"Expected 70.8%, got {c2['dbscan_noise_pct']}"
     assert '9 Components' in c2['pca_variance'], f"Expected 9 Components, got {c2['pca_variance']}"
@@ -30,14 +29,16 @@ def test_all_metrics():
     for m in lb:
         print(f"{m['name']:<30} | AUC: {m['roc_auc']:<6} | Loss: {m['log_loss']:<6} | Acc: {m['accuracy']}%")
 
+    assert len(lb) == 10, f"Expected 10 models, got {len(lb)}"
     assert lb[0]['name'] == 'XGBoost Classifier'
     assert lb[0]['roc_auc'] == 0.7397
     assert lb[1]['name'] == 'LightGBM Classifier'
     assert lb[1]['roc_auc'] == 0.7391
-    assert any(m['name'] == 'Factorization Machine (FM)' and m['roc_auc'] == 0.7348 for m in lb)
-    assert any(m['name'] == 'Google FTRL-Proximal' and m['roc_auc'] == 0.7285 for m in lb)
+    assert any(m['name'] == 'Gradient Boosting (GBM)' and m['roc_auc'] == 0.7287 for m in lb)
+    assert any(m['name'] == 'Random Forest Classifier' and m['roc_auc'] == 0.7225 for m in lb)
     assert any(m['name'] == 'Decision Tree (Pruned)' and m['roc_auc'] == 0.6681 for m in lb)
     assert any(m['name'] == 'Logistic Regression (L2)' and m['roc_auc'] == 0.6468 for m in lb)
+    assert any(m['name'] == 'Logistic Regression (L1)' and m['roc_auc'] == 0.6468 for m in lb)
 
     print("\n=== 3. Testing Flask App Template Rendering ===")
     client = app.app.test_client()

@@ -17,22 +17,22 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Optimal Max Depth</div>
-        <div class="stat-value">8</div>
+        <div class="stat-value">{{ summary.best_depth | default(summary.max_depth | default(5)) }}</div>
         <div class="stat-sub">Prevents leaf node overfitting</div>
       </div>
       <div class="stat-card accent-green">
         <div class="stat-label">Decision Tree AUC</div>
-        <div class="stat-value">0.7104</div>
+        <div class="stat-value">{{ summary.roc_auc | default('0.6681') | round(4) }}</div>
         <div class="stat-sub">Test ROC-AUC score</div>
       </div>
       <div class="stat-card accent-purple">
         <div class="stat-label">Top Split Feature</div>
-        <div class="stat-value">C18_enc</div>
+        <div class="stat-value">{{ (summary.top_features.keys() | list)[0] if (summary and summary.top_features) else 'C18_enc' }}</div>
         <div class="stat-sub">Highest Gini gain</div>
       </div>
       <div class="stat-card accent-orange">
         <div class="stat-label">Test Accuracy</div>
-        <div class="stat-value">64.52%</div>
+        <div class="stat-value">{{ summary.test_accuracy | default('63.88') }}%</div>
         <div class="stat-sub">Balanced class weighting</div>
       </div>
     </div>
@@ -48,11 +48,11 @@
     <div class="figure-grid">
       <div class="figure-card">
         <h3>Tree Depth vs ROC-AUC (Overfitting Analysis)</h3>
-        <p class="purpose">Train vs Test AUC score across tree depths 2 to 20.</p>
+        <p class="purpose">Train vs Test AUC score across tree depths 1 to 10.</p>
         <img src="{{ url_for('serve_figures', filename='dt_04_depth_vs_auc.png') }}" alt="Tree Depth Tuning">
         <div class="observation">
           <div class="obs-label">OVERFITTING DYNAMICS</div>
-          Unconstrained trees (depth > 15) suffer severe overfitting (Train AUC 0.95 vs Test AUC 0.58). Constraining depth to 8 maximizes generalization AUC (0.7104).
+          Constraining depth to {{ summary.best_depth | default(summary.max_depth | default(5)) }} balances generalization (AUC = {{ summary.roc_auc | default('0.6681') | round(4) }}) while preventing memorization of sparse leaf nodes.
         </div>
       </div>
 
@@ -62,7 +62,7 @@
         <img src="{{ url_for('serve_figures', filename='dt_02_feature_importance.png') }}" alt="Decision Tree Feature Importance">
         <div class="observation">
           <div class="obs-label">TOP DRIVERS</div>
-          Feature <code>C18_enc</code> accounts for 24.5% of total split importance, followed by <code>site_id_freq</code> (14.2%) and <code>C16_enc</code> (11.8%).
+          Feature <code>C18_enc</code> accounts for over 50% of total split importance, followed by <code>site_id_freq</code> and <code>app_id_freq</code>.
         </div>
       </div>
 

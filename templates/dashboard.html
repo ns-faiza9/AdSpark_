@@ -37,15 +37,15 @@
         </div>
         <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">Supervised Pipeline</h3>
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px;">
-          12 algorithms evaluated on 1.01M impressions & 24 engineered features (16.94% CTR).
+          12 algorithms evaluated on {{ card_1.rows }} impressions & {{ card_1.features }} features ({{ card_1.baseline_ctr }} CTR).
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
-          <li>• <strong>Dataset:</strong> 1.01M rows, 24 features (Frequency + OHE)</li>
-          <li>• <strong>Baseline CTR:</strong> 16.94% Positive Ad Clicks</li>
-          <li>• <strong>Linear Baseline:</strong> OLS R² = 0.0382, RMSE = 0.3678</li>
-          <li>• <strong>Logistic Regression:</strong> ROC-AUC = 0.7180, Loss = 0.4125</li>
-          <li>• <strong>Decision Tree:</strong> Optimal depth = 8, AUC = 0.6840</li>
-          <li>• <strong>Top Ensemble:</strong> <span style="color: var(--green); font-weight: 700;">XGBoost (AUC = 0.7397)</span></li>
+          <li>• <strong>Dataset:</strong> {{ card_1.rows }} rows, {{ card_1.features }} features (Frequency + OHE)</li>
+          <li>• <strong>Baseline CTR:</strong> {{ card_1.baseline_ctr }} Positive Ad Clicks</li>
+          <li>• <strong>Linear Baseline:</strong> OLS R² = {{ card_1.ols_r2 | round(4) }}, RMSE = {{ card_1.ols_rmse | round(4) }}</li>
+          <li>• <strong>Logistic Regression:</strong> ROC-AUC = {{ card_1.logreg_auc | round(4) }}, Loss = {{ card_1.logreg_loss | round(4) }}</li>
+          <li>• <strong>Decision Tree:</strong> Optimal depth = {{ card_1.dt_depth }}, AUC = {{ card_1.dt_auc | round(4) }}</li>
+          <li>• <strong>Top Ensemble:</strong> <span style="color: var(--green); font-weight: 700;">{{ card_1.best_model }} (AUC = {{ card_1.best_auc | round(4) }})</span></li>
         </ul>
       </div>
 
@@ -60,10 +60,10 @@
           Cluster analysis, dimensionality reduction projections, and outlier anomaly scoring.
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
-          <li>• <strong>K-Means WCSS:</strong> Optimal \(k = 3\) (Silhouette = {{ card_2.best_silhouette }})</li>
+          <li>• <strong>K-Means WCSS:</strong> Optimal {{ card_2.kmeans_elbow }} (Silhouette = {{ card_2.best_silhouette }})</li>
           <li>• <strong>Hierarchical:</strong> Single, Complete, Avg & Ward Linkages</li>
           <li>• <strong>DBSCAN:</strong> \(\epsilon = 1.8\), MinPts = 5 (Noise = {{ card_2.dbscan_noise_pct }})</li>
-          <li>• <strong>PCA Scree:</strong> Top 4 components capture 90.2% variance</li>
+          <li>• <strong>PCA Scree:</strong> {{ card_2.pca_variance }}</li>
           <li>• <strong>t-SNE & UMAP:</strong> 2D manifold separation preview</li>
           <li>• <strong>Anomaly:</strong> Isolation Forest flagged {{ card_2.anomalies_detected }} outliers</li>
         </ul>
@@ -80,8 +80,8 @@
           Imbalanced metrics, nested cross-validation, and McNemar hypothesis testing.
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.7; list-style: none; padding-left: 0;">
-          <li>• <strong>3-Way Split:</strong> 70% Train / 15% Val / 15% Test</li>
-          <li>• <strong>CV Bias:</strong> K-Fold ({{ card_3.stratified_cv_auc }}) vs Nested ({{ card_3.nested_cv_auc }})</li>
+          <li>• <strong>3-Way Split:</strong> {{ card_3.split_ratio }}</li>
+          <li>• <strong>CV Bias:</strong> K-Fold ({{ card_3.kfold_mean_auc }}) vs Stratified ({{ card_3.stratified_cv_auc }}) vs Nested ({{ card_3.nested_cv_auc }})</li>
           <li>• <strong>PR-AUC:</strong> {{ card_3.pr_auc }}, Log-Loss = {{ card_3.log_loss }}</li>
           <li>• <strong>Calibration:</strong> ECE reduced from {{ card_3.ece_reduction }} to {{ card_3.ece_calibrated }}</li>
           <li>• <strong>McNemar's:</strong> \(p = {{ card_3.mcnemar_pval }}\) (<span style="color: var(--green); font-weight: 700;">Significant</span>)</li>
@@ -128,7 +128,8 @@
             <th>Model Family</th>
             <th>ROC-AUC</th>
             <th>Log-Loss</th>
-            <th>Normalized Entropy (NE)</th>
+            <th>Accuracy</th>
+            <th>F1 Score</th>
             <th>ECE Calibration</th>
             <th>Latency (ms)</th>
             <th>Operational Profile</th>
@@ -145,7 +146,8 @@
               <td><span class="chip" style="font-size: 0.72rem;">{{ item.type }}</span></td>
               <td style="font-family: monospace; font-weight: bold; color: var(--green);">{{ item.roc_auc }}</td>
               <td style="font-family: monospace;">{{ item.log_loss }}</td>
-              <td style="font-family: monospace; color: var(--accent);">{{ item.ne }}</td>
+              <td style="font-family: monospace;">{{ item.accuracy }}%</td>
+              <td style="font-family: monospace;">{{ item.f1 }}</td>
               <td style="font-family: monospace;">{{ item.ece }}</td>
               <td style="font-family: monospace;">{{ item.latency_ms }} ms</td>
               <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ item.notes }}</td>

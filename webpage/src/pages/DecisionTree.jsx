@@ -7,35 +7,35 @@ export default function DecisionTree() {
   const { data } = useJson('07_decision_tree_summary.json')
   const [selectedDepth, setSelectedDepth] = useState(null)
 
-  const sweep = data?.depth_sweep || []
-  const activeDepth = selectedDepth ?? data?.max_depth ?? 5
+  const sweep = data?.depth_tuning || data?.depth_sweep || []
+  const activeDepth = selectedDepth ?? data?.best_depth ?? data?.max_depth ?? 5
   const activeRow = sweep.find((r) => r.depth === activeDepth) || {}
 
   const stats = [
     {
       label: 'Testing Accuracy',
-      value: data ? `${data.test_accuracy}%` : '—',
-      sub: `${data ? data.test_records?.toLocaleString() : '—'} test records`,
+      value: data ? `${data.test_accuracy}%` : '63.88%',
+      sub: `${data ? data.test_records?.toLocaleString() : '202,145'} test records`,
       icon: Gauge,
       accent: 'accent-green',
     },
     {
       label: 'Training Accuracy',
-      value: data ? `${data.train_accuracy}%` : '—',
-      sub: `${data ? data.train_records?.toLocaleString() : '—'} training records`,
+      value: data ? `${data.train_accuracy}%` : '64.21%',
+      sub: `${data ? data.train_records?.toLocaleString() : '808,579'} training records`,
       icon: Target,
     },
     {
       label: 'ROC-AUC',
-      value: data ? data.roc_auc.toFixed(4) : '—',
+      value: data ? data.roc_auc.toFixed(4) : '0.6681',
       sub: 'discrimination power',
       icon: Crosshair,
       accent: 'accent-purple',
     },
     {
       label: 'Tree Nodes',
-      value: data ? data.n_nodes : '—',
-      sub: `${data?.n_leaves ?? '—'} leaves, depth ${data?.max_depth ?? '—'}`,
+      value: data ? data.n_nodes ?? '—' : '—',
+      sub: `${data?.n_leaves ?? '—'} leaves, depth ${data?.best_depth ?? data?.max_depth ?? 5}`,
       icon: Layers,
     },
   ]
@@ -59,7 +59,7 @@ export default function DecisionTree() {
 
         {/* Stat cards */}
         <section className="section">
-          <h2 className="section-title"><span className="section-badge">01</span>Performance (depth = {data?.max_depth ?? 5})</h2>
+          <h2 className="section-title"><span className="section-badge">01</span>Performance Overview</h2>
           <div className="stats-grid">
             {stats.map((s) => {
               const Icon = s.icon
@@ -74,10 +74,10 @@ export default function DecisionTree() {
           </div>
         </section>
 
-        {/* Classification Report */}
+        {/* Classification report */}
         {reportRows.length > 0 && (
           <section className="section">
-            <h2 className="section-title"><span className="section-badge">02</span>Classification Report</h2>
+            <h2 className="section-title"><span className="section-badge">02</span>Classification Report (Depth = {data?.best_depth ?? data?.max_depth ?? 5})</h2>
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
@@ -108,7 +108,7 @@ export default function DecisionTree() {
           <section className="section">
             <h2 className="section-title"><span className="section-badge">03</span>Depth Sweep</h2>
             <p className="section-desc">
-              Select a depth to see its metrics. The selected model uses <strong>depth = {data?.max_depth}</strong>.
+              Select a depth to see its metrics. The optimal model uses <strong>depth = {data?.best_depth ?? data?.max_depth ?? 5}</strong>.
             </p>
 
             {/* Tab selector */}
@@ -149,7 +149,7 @@ export default function DecisionTree() {
                 src="dt_04_depth_vs_auc.png"
                 title="Depth sweep — AUC and Accuracy"
                 purpose="ROC-AUC and accuracy as a function of max_depth (1–10)."
-                observation="AUC stabilises around depth 5–6; deeper trees overfit the training set without improving test performance."
+                observation={`AUC balances around depth ${data?.best_depth ?? data?.max_depth ?? 5}; deeper trees risk memorizing training noise.`}
                 fullWidth
               />
             </div>
@@ -162,20 +162,20 @@ export default function DecisionTree() {
           <div className="figure-grid">
             <FigureCard
               src="dt_01_tree_visualization.png"
-              title="Tree structure (top 3 levels)"
-              purpose="First 3 levels of the decision tree — shows the most important split decisions."
-              observation="The root split is on the most discriminative feature; subsequent splits handle device and site context."
+              title="Tree structure (top branches)"
+              purpose="First levels of the decision tree — shows the most important split decisions."
+              observation="The root split is on the most discriminative feature (C18_enc); subsequent splits handle site and app context."
               fullWidth
             />
             <FigureCard
               src="dt_02_feature_importance.png"
-              title="Top 15 feature importances"
+              title="Top feature importances"
               purpose="Gini-based feature importances — which features the tree uses most."
-              observation="Frequency-encoded identifiers and banner position dominate, consistent with the EDA and linear model findings."
+              observation="Feature C18_enc accounts for over 50% of total split importance, followed by site_id_freq and app_id_freq."
             />
             <FigureCard
               src="dt_03_confusion_matrix.png"
-              title="Confusion matrix (depth=5)"
+              title={`Confusion matrix (depth=${data?.best_depth ?? data?.max_depth ?? 5})`}
               purpose="True/false positives and negatives at the 0.5 threshold."
               observation="Balanced class weights push the tree to recall more clicks at the cost of precision."
             />
@@ -185,7 +185,7 @@ export default function DecisionTree() {
           {data?.top_features && (
             <div style={{ marginTop: '1.5rem' }}>
               <div className="section-desc" style={{ marginBottom: '0.75rem' }}>
-                <strong>Predictive features ({data.n_features})</strong>
+                <strong>Predictive features ({Object.keys(data.top_features).length})</strong>
               </div>
               <div className="chip-row">
                 {Object.keys(data.top_features).map((f) => (

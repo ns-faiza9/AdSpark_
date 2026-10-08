@@ -15,12 +15,12 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">ROC-AUC Score</div>
-        <div class="stat-value">0.7397</div>
+        <div class="stat-value">{{ summary.roc_auc | default('0.7397') }}</div>
         <div class="stat-sub">Discrimination across thresholds</div>
       </div>
       <div class="stat-card accent-green">
         <div class="stat-label">Precision-Recall AUC (PR-AUC)</div>
-        <div class="stat-value">{{ summary.pr_auc | default('0.4820') }}</div>
+        <div class="stat-value">{{ summary.pr_auc | default('0.1749') }}</div>
         <div class="stat-sub">Focuses on positive click class</div>
       </div>
       <div class="stat-card accent-purple">
@@ -40,11 +40,11 @@
     <div class="figure-grid">
       <div class="figure-card full-width">
         <h3>Precision-Recall Curve & Classification Confusion Matrix</h3>
-        <p class="purpose">Left: PR curve highlighting positive class precision-recall trade-off. Right: Confusion matrix under 0.20 classification threshold.</p>
+        <p class="purpose">Left: PR curve highlighting positive class precision-recall trade-off. Right: Confusion matrix under test evaluation.</p>
         <img src="{{ url_for('serve_figures', filename='imb_01_roc_pr_curves.png') }}" alt="Imbalanced Metrics PR Curve">
         <div class="observation">
           <div class="obs-label">METRIC SELECTION INSIGHT</div>
-          In highly imbalanced CTR datasets (16.94% positive class), ROC-AUC can present an overly optimistic score due to large true negative volume. Precision-Recall AUC (0.4820) provides a far more sensitive indicator of positive ad click capture.
+          In highly imbalanced CTR datasets (16.94% positive class), ROC-AUC can present an optimistic score due to large true negative volume. Precision-Recall AUC ({{ summary.pr_auc | default('0.1749') }}) provides a sensitive indicator of positive ad click capture.
         </div>
       </div>
     </div>

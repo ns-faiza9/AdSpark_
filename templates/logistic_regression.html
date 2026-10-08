@@ -17,17 +17,17 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Logistic Test Accuracy</div>
-        <div class="stat-value">83.06%</div>
+        <div class="stat-value">{{ (((summary.test_accuracy * 100) if summary.test_accuracy <= 1 else summary.test_accuracy) if summary.test_accuracy is defined else 58.54) | round(2) }}%</div>
         <div class="stat-sub">Overall classification accuracy</div>
       </div>
       <div class="stat-card accent-green">
         <div class="stat-label">ROC-AUC Score</div>
-        <div class="stat-value">0.6612</div>
+        <div class="stat-value">{{ summary.roc_auc | default('0.6468') | round(4) }}</div>
         <div class="stat-sub">Discrimination capability</div>
       </div>
       <div class="stat-card accent-purple">
         <div class="stat-label">Log-Loss</div>
-        <div class="stat-value">0.4281</div>
+        <div class="stat-value">{{ summary.log_loss | default('0.6566') | round(4) }}</div>
         <div class="stat-sub">Cross-entropy loss</div>
       </div>
       <div class="stat-card accent-orange">
@@ -60,7 +60,7 @@
         <img src="{{ url_for('serve_figures', filename='logreg_04_scaling_comparison.png') }}" alt="Scaler Comparison">
         <div class="observation">
           <div class="obs-label">SCALING IMPACT</div>
-          StandardScaler improves convergence speed and boosts ROC-AUC from 0.5810 to 0.6612.
+          StandardScaler achieves ROC-AUC of {{ summary.roc_auc | default('0.6468') | round(4) }} with stable parameter convergence.
         </div>
       </div>
 
@@ -70,7 +70,7 @@
         <img src="{{ url_for('serve_figures', filename='logreg_01_roc_curve.png') }}" alt="Logistic ROC Curve">
         <div class="observation">
           <div class="obs-label">BASELINE CLASSIFIER</div>
-          Provides a solid linear classification baseline (AUC = 0.6612) prior to tree non-linearities.
+          Provides a solid linear classification baseline (AUC = {{ summary.roc_auc | default('0.6468') | round(4) }}) prior to tree non-linearities.
         </div>
       </div>
 

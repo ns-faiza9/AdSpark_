@@ -6,11 +6,23 @@ and Validation & Calibration diagnostics.
 """
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Dict, Any, List
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "analysis" / "output"
+CLEAN_DIR = BASE_DIR / "clean"
+if str(CLEAN_DIR) not in sys.path:
+    sys.path.insert(0, str(CLEAN_DIR))
+
+try:
+    from pipeline_connections import get_stage_connection, get_all_connections
+except ImportError:
+    def get_stage_connection(stage_id: str) -> Dict[str, Any]:
+        return {}
+    def get_all_connections() -> Dict[str, Dict[str, Any]]:
+        return {}
 
 
 def load_json(filename: str) -> Dict[str, Any]:

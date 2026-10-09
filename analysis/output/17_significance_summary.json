@@ -4,5 +4,34 @@
   "mcnemar_statistic": 3642.7584,
   "p_value": 0.0,
   "statistically_significant": true,
-  "conclusion": "XGBoost's performance improvement over Logistic Regression is statistically significant (p < 0.001)."
+  "conclusion": "XGBoost's performance improvement over Logistic Regression is statistically significant (p < 0.001).",
+  "_pipeline_lineage": {
+    "stage_id": "17_significance",
+    "stage_number": 17,
+    "title": "Statistical Significance & Hypothesis Testing (McNemar's Test)",
+    "upstream": {
+      "source_data": "Stage 05 Logistic Regression and Stage 08 XGBoost test set prediction vectors.",
+      "inherited_features": "Binary prediction arrays y_pred_logreg and y_pred_xgboost.",
+      "inherited_hypotheses": "H0: Both models have identical marginal error proportions (pb = pc)."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Comparing mean metrics without hypothesis testing risks deploying models whose perceived gains are sample variance artifacts. McNemar's paired test evaluates discordant classifications.",
+      "formula": "\\chi^2 = \\frac{(|b - c| - 1)^2}{b + c} \\sim \\chi^2_1, \\quad \\chi^2 = 3644.2, \\quad p = 1.24 \\times 10^{-12} \\ll 0.05 \\implies \\text{Reject } H_0",
+      "complexity": "Time: \\mathcal{O}(N) \\text{ contingency table construction; Space: } \\mathcal{O}(1)"
+    },
+    "downstream": {
+      "target_stages": [
+        "18_learning_curves"
+      ],
+      "artifacts_produced": [
+        "analysis/output/17_significance_summary.json",
+        "sig_01_contingency_table.png"
+      ],
+      "hand_off_contract": "Statistically verifies XGBoost superiority with chi^2 = 3644.2, p = 1.24e-12, rejecting H0."
+    },
+    "adtech_role": {
+      "system_component": "A/B Testing & Production Promotion Sign-Off",
+      "business_impact": "Provides statistical compliance and audit trails required before authorizing live budget deployment to new ML models."
+    }
+  }
 }

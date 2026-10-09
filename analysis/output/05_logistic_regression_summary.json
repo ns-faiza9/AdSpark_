@@ -38,5 +38,40 @@
       "train_accuracy": 58.72,
       "test_accuracy": 58.55
     }
+  },
+  "_pipeline_lineage": {
+    "stage_id": "05_logistic_regression",
+    "stage_number": 5,
+    "title": "Logistic Regression with Sigmoid Link Function",
+    "upstream": {
+      "source_data": "Stage 03 engineered feature matrix + Stage 04 OLS failure diagnostics.",
+      "inherited_features": "23 continuous and frequency-encoded features.",
+      "inherited_hypotheses": "Sigmoid link function bounds predictions to valid probabilities and minimizes cross-entropy loss."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Transitions from continuous MSE loss to Bernoulli negative log-likelihood (Log-Loss). The canonical Sigmoid link function sigma(z) maps real log-odds to [0, 1].",
+      "formula": "\\hat{p}_i = \\sigma(w^T x_i) = \\frac{1}{1 + e^{-w^T x_i}}, \\quad \\mathcal{L}_{\\text{CE}}(w) = -\\frac{1}{N}\\sum_{i=1}^N \\left[y_i \\ln \\hat{p}_i + (1-y_i)\\ln(1-\\hat{p}_i)\\right]",
+      "complexity": "Time: \\mathcal{O}(k \\cdot p \\cdot N) \\text{ via L-BFGS Quasi-Newton iterations}"
+    },
+    "downstream": {
+      "target_stages": [
+        "06_regularization",
+        "08_ensemble",
+        "14_validation",
+        "16_calibration",
+        "17_significance"
+      ],
+      "artifacts_produced": [
+        "analysis/output/05_logistic_regression_summary.json",
+        "logreg_01_roc.png",
+        "logreg_02_confusion.png",
+        "logreg_03_coeff.png"
+      ],
+      "hand_off_contract": "Delivers baseline ROC-AUC = 0.6468, Log-Loss = 0.6566, Accuracy = 58.54%."
+    },
+    "adtech_role": {
+      "system_component": "Ultra-Fast DSP Online Bidding Engine",
+      "business_impact": "Sub-millisecond inference (<0.5ms) allows evaluation of 500,000 queries per second (QPS) in live RTB auctions."
+    }
   }
 }

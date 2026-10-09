@@ -3,5 +3,35 @@
   "isolation_forest_pct": 5.0,
   "one_class_svm_anomalies": 63,
   "one_class_svm_pct": 5.0,
-  "description": "Identified fraudulent or abnormal ad impression traffic patterns."
+  "description": "Identified fraudulent or abnormal ad impression traffic patterns.",
+  "_pipeline_lineage": {
+    "stage_id": "13_anomaly",
+    "stage_number": 13,
+    "title": "Click Fraud & Anomaly Detection (Isolation Forest, One-Class SVM)",
+    "upstream": {
+      "source_data": "Stage 11 DBSCAN noise signals + Stage 12 PCA manifold projections.",
+      "inherited_features": "23 continuous features.",
+      "inherited_hypotheses": "Fraudulent bot impressions require fewer random partitions to isolate in feature space than normal organic traffic."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Anomalies are few and different. Isolation Forest recursively partitions data; anomalies have significantly shorter average path lengths h(x) in isolation trees.",
+      "formula": "s(x, n) = 2^{-\\frac{\\mathbb{E}(h(x))}{c(n)}}, \\quad c(n) = 2\\ln(n-1) + 0.5772156649 - \\frac{2(n-1)}{n}",
+      "complexity": "Time: \\mathcal{O}(T \\cdot \\psi \\log \\psi) \\text{ where } \\psi \\text{ is subsample size}"
+    },
+    "downstream": {
+      "target_stages": [
+        "14_validation",
+        "16_calibration"
+      ],
+      "artifacts_produced": [
+        "analysis/output/13_anomaly_summary.json",
+        "anom_01_scores.png"
+      ],
+      "hand_off_contract": "Flags 5.0% of impressions as anomalous / fraud risk."
+    },
+    "adtech_role": {
+      "system_component": "Pre-Bid Anti-Fraud Protection Shield",
+      "business_impact": "Prevents advertisers from paying for fraudulent click-farm impressions, saving millions in wasted ad spend."
+    }
+  }
 }

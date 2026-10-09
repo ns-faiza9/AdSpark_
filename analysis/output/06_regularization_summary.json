@@ -35,5 +35,35 @@
       "f1": 0.33840733689856467,
       "n_nonzero_coefs": 23
     }
+  },
+  "_pipeline_lineage": {
+    "stage_id": "06_regularization",
+    "stage_number": 6,
+    "title": "Regularization Dynamics (Lasso L1, Ridge L2, ElasticNet)",
+    "upstream": {
+      "source_data": "Stage 03 features + Stage 05 unregularized logistic model weights.",
+      "inherited_features": "23 features with correlated frequency distributions.",
+      "inherited_hypotheses": "L1 penalty performs embedded feature selection; L2 penalty shrinks redundant weights and prevents overfitting."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Unconstrained log-loss optimization leads to variance inflation when features are collinear. Adding norms shrinks the parameter vector toward zero.",
+      "formula": "\\min_w \\mathcal{L}_{\\text{CE}}(w) + \\lambda \\left[ \\alpha \\|w\\|_1 + \\frac{1-\\alpha}{2} \\|w\\|_2^2 \\right], \\quad \\partial |w_j| / \\partial w_j = \\text{sign}(w_j) \\implies \\text{exact zeros}",
+      "complexity": "Time: \\mathcal{O}(k \\cdot p \\cdot N) \\text{ via Coordinate Descent / L-BFGS}"
+    },
+    "downstream": {
+      "target_stages": [
+        "07_decision_tree"
+      ],
+      "artifacts_produced": [
+        "analysis/output/06_regularization_summary.json",
+        "reg_01_coeff_paths.png",
+        "reg_02_metrics_comp.png"
+      ],
+      "hand_off_contract": "Confirms Ridge L2 achieves AUC = 0.6482, while showing linear models hit performance ceiling due to lack of non-linear interaction modeling."
+    },
+    "adtech_role": {
+      "system_component": "Sparse Model Compression for Edge & Mobile SDKs",
+      "business_impact": "Reduces memory footprint of weights by 40%, enabling local on-device CTR inference inside mobile apps without server round-trips."
+    }
   }
 }

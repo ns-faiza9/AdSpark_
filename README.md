@@ -201,9 +201,19 @@ cd AdSpark_
 pip install -r analysis/requirements.txt
 ```
 
-### 2. Run the Analysis Pipeline
+### 2. Run the Analysis Pipeline or Clean Suite
 
-Generate all figures, JSON summaries, and machine learning models:
+To run the self-contained clean experiments suite with detailed stage-by-stage pipeline connections and lineage reporting:
+
+```bash
+# Execute all 19 clean experiments with verbose pipeline hand-off logs
+python clean/run_all_clean.py
+
+# Or run any individual experiment
+python clean/08_ensemble_clean.py
+```
+
+To run the standard analytical pipeline:
 
 ```bash
 python analysis/run_co4_co5_pipeline.py

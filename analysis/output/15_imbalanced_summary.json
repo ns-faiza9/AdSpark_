@@ -12,5 +12,35 @@
       273,
       147
     ]
-  ]
+  ],
+  "_pipeline_lineage": {
+    "stage_id": "15_imbalanced",
+    "stage_number": 15,
+    "title": "Imbalanced Classification & PR-AUC Optimization",
+    "upstream": {
+      "source_data": "Stage 01 class imbalance ratio (16.94% positive clicks) + Stage 14 validation protocol.",
+      "inherited_features": "Model probability outputs across positive/negative click events.",
+      "inherited_hypotheses": "ROC-AUC is overly optimistic under class imbalance; PR-AUC directly penalizes false positive bid costs."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "When negative impressions vastly outnumber clicks, False Positives inflate True Negative rate, artificially inflating ROC-AUC. PR-AUC focuses exclusively on the minority positive class.",
+      "formula": "\\text{PR-AUC} = \\sum_{k=1}^K (R_k - R_{k-1}) P_k = 0.1749, \\quad \\text{Baseline} = \\frac{P}{P+N} = 0.1694",
+      "complexity": "Time: \\mathcal{O}(N \\log N) \\text{ for ranking sorting}"
+    },
+    "downstream": {
+      "target_stages": [
+        "16_calibration"
+      ],
+      "artifacts_produced": [
+        "analysis/output/15_imbalanced_summary.json",
+        "imb_01_pr_curve.png",
+        "imb_02_threshold_tuning.png"
+      ],
+      "hand_off_contract": "Calculates PR-AUC = 0.1749 (baseline 0.1694) and optimal F1 threshold tau* = 0.22."
+    },
+    "adtech_role": {
+      "system_component": "Cost-Sensitive Bidding Threshold Tuner",
+      "business_impact": "Balances ad impression yield against wasted bid spend by selecting the profit-maximizing classification threshold for CPA campaigns."
+    }
+  }
 }

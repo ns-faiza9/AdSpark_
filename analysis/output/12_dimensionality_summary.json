@@ -17,5 +17,35 @@
     30,
     50
   ],
-  "umap_n_neighbors": 15
+  "umap_n_neighbors": 15,
+  "_pipeline_lineage": {
+    "stage_id": "12_dimensionality",
+    "stage_number": 12,
+    "title": "Dimensionality Reduction (PCA Scree & Manifold Embedding)",
+    "upstream": {
+      "source_data": "Stage 03 feature matrix X + Stage 11 curse of dimensionality observations.",
+      "inherited_features": "23 continuous features.",
+      "inherited_hypotheses": "A smaller subspace of orthogonal principal components captures >=90% of total feature variance."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "High dimensional feature spaces suffer from metric space sparsity. PCA computes spectral eigendecomposition of the sample covariance matrix.",
+      "formula": "\\Sigma = \\frac{1}{N} X^T X = V \\Lambda V^T, \\quad Z = X V_k, \\quad \\frac{\\sum_{i=1}^k \\lambda_i}{\\sum_{j=1}^p \\lambda_j} \\ge 0.90 \\implies k=9",
+      "complexity": "Time: \\mathcal{O}(p^2 N + p^3) \\text{ for covariance SVD}"
+    },
+    "downstream": {
+      "target_stages": [
+        "13_anomaly"
+      ],
+      "artifacts_produced": [
+        "analysis/output/12_dimensionality_summary.json",
+        "pca_01_scree.png",
+        "pca_02_2d_projection.png"
+      ],
+      "hand_off_contract": "Proves 9 principal components capture 90.0% variance (PC1=23.41%, PC2=14.48%, cumulative 37.89% for 2D)."
+    },
+    "adtech_role": {
+      "system_component": "Vector Compression for Ultra-Low Latency DSP Edge Scoring",
+      "business_impact": "Compresses feature vectors by 60%, reducing network transfer overhead and cache footprint in distributed edge inference."
+    }
+  }
 }

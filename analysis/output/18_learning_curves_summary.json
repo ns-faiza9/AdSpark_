@@ -1,5 +1,34 @@
 {
   "final_train_score": 0.81,
   "final_val_score": 0.74,
-  "bias_variance_diagnosis": "Good Fit \u2014 Convergence gap is narrow (< 0.07), indicating balanced bias-variance."
+  "bias_variance_diagnosis": "Good Fit \u2014 Convergence gap is narrow (< 0.07), indicating balanced bias-variance.",
+  "_pipeline_lineage": {
+    "stage_id": "18_learning_curves",
+    "stage_number": 18,
+    "title": "Learning Curves, Bias-Variance Diagnostics & Sample Complexity",
+    "upstream": {
+      "source_data": "Stage 08 Champion XGBoost architecture + Stage 17 validated statistical model.",
+      "inherited_features": "23 features evaluated over training subsamples [10%, 25%, 50%, 75%, 100%].",
+      "inherited_hypotheses": "Training and validation log-loss converge asymptotically, confirming low variance."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Evaluates the generalization gap Delta_gen(N) = L_val(N) - L_train(N) to determine if model is bottlenecked by data volume or model capacity.",
+      "formula": "\\Delta_{\\text{gen}}(N) = \\mathcal{L}_{\\text{val}}(N) - \\mathcal{L}_{\\text{train}}(N), \\quad \\lim_{N \\to \\infty} \\mathcal{L}_{\\text{val}}(N) = \\text{Bayes Error} + \\text{Bias}",
+      "complexity": "Time: \\mathcal{O}\\left(\\sum_{k} N_k \\log N_k\\right) \\text{ across sample increments}"
+    },
+    "downstream": {
+      "target_stages": [
+        "19_explainability"
+      ],
+      "artifacts_produced": [
+        "analysis/output/18_learning_curves_summary.json",
+        "lc_01_learning_curve.png"
+      ],
+      "hand_off_contract": "Demonstrates diminishing returns beyond N=800k samples, optimizing retraining compute budgets."
+    },
+    "adtech_role": {
+      "system_component": "Model Retraining Scheduler & Compute Resource Allocator",
+      "business_impact": "Saves cloud training costs by bounding required training data volume for daily model refresh jobs."
+    }
+  }
 }

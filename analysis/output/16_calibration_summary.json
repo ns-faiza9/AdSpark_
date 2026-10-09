@@ -4,5 +4,34 @@
   "brier_score_isotonic": 0.1302,
   "ece_before": 0.0845,
   "ece_after_isotonic": 0.0124,
-  "conclusion": "Isotonic Regression reduces Expected Calibration Error (ECE) by 85.3%."
+  "conclusion": "Isotonic Regression reduces Expected Calibration Error (ECE) by 85.3%.",
+  "_pipeline_lineage": {
+    "stage_id": "16_calibration",
+    "stage_number": 16,
+    "title": "Probability Calibration (Platt Scaling & Isotonic Regression)",
+    "upstream": {
+      "source_data": "Stage 08 uncalibrated XGBoost/GBM probability scores + Stage 15 thresholding insights.",
+      "inherited_features": "Raw probability predictions hat{p} in [0, 1].",
+      "inherited_hypotheses": "Tree ensemble predictions are distorted near 0 and 1; calibration aligns confidence with empirical click frequency."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Ad exchanges bid using expected value: eCPM = Bid * P(click). If P(click) is uncalibrated, bids are systematically biased, causing severe under- or over-bidding. Calibration minimizes Expected Calibration Error (ECE).",
+      "formula": "\\text{ECE} = \\sum_{m=1}^M \\frac{|B_m|}{N} |\\text{acc}(B_m) - \\text{conf}(B_m)|, \\quad \\text{Isotonic: } \\min_{\\hat{m}} \\sum (y_i - \\hat{m}(f_i))^2 \\text{ s.t. } \\hat{m} \\text{ monotonic}",
+      "complexity": "Time: \\mathcal{O}(N) \\text{ via Pair Adjacent Violators (PAV) algorithm; ECE drops } 0.0845 \\to 0.0124"
+    },
+    "downstream": {
+      "target_stages": [
+        "17_significance"
+      ],
+      "artifacts_produced": [
+        "analysis/output/16_calibration_summary.json",
+        "cal_01_reliability_diagram.png"
+      ],
+      "hand_off_contract": "Reduces Expected Calibration Error (ECE) from 0.0845 to 0.0124 (Isotonic) and 0.0189 (Platt)."
+    },
+    "adtech_role": {
+      "system_component": "RTB Valuation & Dynamic Pricing Engine",
+      "business_impact": "Directly protects DSP profit margins: calibrated probabilities ensure that expected revenue matches actual advertiser billing down to fractions of a cent."
+    }
+  }
 }

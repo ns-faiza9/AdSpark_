@@ -29,7 +29,7 @@ def load_summary(filename: str) -> dict:
 
 @app.context_processor
 def inject_global_data():
-    """Inject global variables into all templates."""
+    """Inject global variables and lineage connections into all templates."""
     ensemble_summary = load_summary("08_ensemble_summary.json")
     data_summary = load_summary("01_data_loading_summary.json")
     return {
@@ -37,6 +37,7 @@ def inject_global_data():
         "global_click_rate": round(data_summary.get("click_rate", 0.1694) * 100, 2),
         "global_best_model": ensemble_summary.get("best_model", "XGBoost"),
         "global_best_auc": ensemble_summary.get("models", {}).get("XGBoost", {}).get("roc_auc", 0.7397),
+        "get_stage_connection": ml_engine.get_stage_connection,
     }
 
 
@@ -180,12 +181,19 @@ def api_modules_eda():
     summary = load_summary("02_eda_summary.json")
     return jsonify({"success": True, "data": summary})
 
-@app.route("/api/summary/<filename>")
-def api_summary(filename: str):
-    if not filename.endswith(".json"):
-        filename += ".json"
-    summary = load_summary(filename)
-    return jsonify(summary)
+@app.route("/api/connections")
+def api_connections_all():
+    """API returning complete 19-stage pipeline lineage and connections."""
+    return jsonify(ml_engine.get_all_connections())
+
+@app.route("/api/connections/<stage_id>")
+def api_connection_stage(stage_id: str):
+    """API returning connections for a specific stage."""
+    try:
+        conn = ml_engine.get_stage_connection(stage_id)
+        return jsonify({"success": True, "connection": conn})
+    except KeyError as e:
+        return jsonify({"success": False, "error": str(e)}), 404
 
 @app.route("/figures/<path:filename>")
 def serve_figures(filename: str):

@@ -51,5 +51,35 @@
       "sample_size": 808579,
       "figure": "lr_fitted_lasso.png"
     }
+  },
+  "_pipeline_lineage": {
+    "stage_id": "04_linear_regression",
+    "stage_number": 4,
+    "title": "Baseline Ordinary Least Squares (OLS) Linear Regression",
+    "upstream": {
+      "source_data": "Stage 03 engineered feature matrix (Data/processed/train_processed.csv).",
+      "inherited_features": "23 numerical and frequency-encoded features.",
+      "inherited_hypotheses": "Can continuous hyperplane minimization adequately model binary click probabilities?"
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "OLS minimizes Euclidean residual sum of squares. However, for binary targets, OLS yields unbounded predictions hat{y} notin [0, 1], severe heteroscedasticity Var(y|x) = p(x)(1-p(x)), and non-normal residuals.",
+      "formula": "\\hat{w}_{\\text{OLS}} = (X^T X)^{-1} X^T y, \\quad \\min_w \\frac{1}{2N} \\|y - Xw\\|_2^2 \\implies R^2 = 0.0422, \\text{RMSE} = 0.3671",
+      "complexity": "Time: \\mathcal{O}(p^2 N + p^3) \\text{ where } p=23"
+    },
+    "downstream": {
+      "target_stages": [
+        "05_logistic_regression"
+      ],
+      "artifacts_produced": [
+        "analysis/output/04_linear_regression_summary.json",
+        "lr_01_residuals.png",
+        "lr_02_coeff.png"
+      ],
+      "hand_off_contract": "Establishes baseline R^2=0.0422, RMSE=0.3671, proving the mathematical necessity of a non-linear link function."
+    },
+    "adtech_role": {
+      "system_component": "Linear Pricing Baseline & Historical Sensitivity Benchmark",
+      "business_impact": "Demonstrates why linear models are dangerous in RTB: unbounded predictions produce negative bids or infinite bids that bankrupt campaigns."
+    }
   }
 }

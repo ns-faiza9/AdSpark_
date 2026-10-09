@@ -5,8 +5,6 @@ site_id_freq
 site_domain_freq
 app_id_freq
 app_domain_freq
-device_id_freq
-device_ip_freq
 device_model_freq
 C1_enc
 banner_pos_enc

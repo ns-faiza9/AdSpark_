@@ -1,0 +1,654 @@
+{
+  "01_data_loading": {
+    "stage_id": "01_data_loading",
+    "stage_number": 1,
+    "title": "Data Ingestion & Memory Optimization",
+    "module_name": "01_data_loading_clean.py",
+    "core_objective": "Ingest raw Avazu click logs, profile missingness, and downcast memory footprint for sub-second analytical processing.",
+    "upstream_antecedents": {
+      "source_data": "Raw Avazu CTR impression dataset (Data/train.gz, 40.4M impressions, 24 attributes).",
+      "inherited_features": [
+        "id",
+        "click",
+        "hour",
+        "C1",
+        "banner_pos",
+        "site_id",
+        "site_domain",
+        "site_category",
+        "app_id",
+        "app_domain",
+        "app_category",
+        "device_id",
+        "device_ip",
+        "device_model",
+        "device_type",
+        "device_conn_type",
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C18",
+        "C19",
+        "C20",
+        "C21"
+      ],
+      "inherited_hypotheses": "None (Pipeline Genesis). Initial empirical prior: binary target y in {0, 1} with class imbalance."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Direct full-file disk reads of 40.4M rows cause severe memory exhaustion (>12GB RAM). Stratified systematic sampling with memory downcasting preserves global distribution properties while operating within laptop and edge constraints.",
+      "formula": "\\bar{y} = \\frac{1}{N} \\sum_{i=1}^N y_i = 0.1694 \\quad (16.94\\%\\text{ baseline CTR prior})",
+      "complexity": "Time: \\mathcal{O}(N) \\quad\\text{Space: Downcast from } 1.2\\text{GB} \\to 182.2\\text{MB } (84.8\\%\\text{ reduction via uint32/category pointers})"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "02_eda",
+        "03_feature_engineering"
+      ],
+      "artifacts_produced": [
+        "Data/train_sample.csv (1.01M rows)",
+        "analysis/output/01_data_loading_summary.json",
+        "01_head.csv",
+        "01_describe.csv",
+        "01_dtypes.csv",
+        "01_missing.csv"
+      ],
+      "hand_off_contract": "Provides verified schema with 0 missing values, fixed random seed (42), and consistent 1,010,000 impression sample."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "DSP Ingestion Pipeline & Log Stream Consumer",
+      "business_impact": "Establishes stream ingestion throughput benchmarks and global baseline prior probability for cold-start bidding in Real-Time Bidding (RTB) exchanges."
+    }
+  },
+  "02_eda": {
+    "stage_id": "02_eda",
+    "stage_number": 2,
+    "title": "Exploratory Data Analysis & Empirical Bayes CTR",
+    "module_name": "02_eda_clean.py",
+    "core_objective": "Conduct statistical profiling, uncover diurnal temporal patterns, inspect high-cardinality ID distributions, and compute Empirical Bayes smoothed CTRs.",
+    "upstream_antecedents": {
+      "source_data": "Stage 01 sampled dataset (Data/train_sample.csv).",
+      "inherited_features": "All 24 raw schema columns verified with 0 missing values.",
+      "inherited_hypotheses": "Click rate varies systematically by time-of-day, device connection type, and publisher placement."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Raw categorical CTRs with small sample sizes exhibit extreme sample variance (e.g. 1 click on 1 impression = 100% CTR). Empirical Bayes shrinkage pulls noisy estimates toward the global prior mean Beta(alpha, beta).",
+      "formula": "\\hat{p}_j^{\\text{EB}} = \\frac{k_j + \\alpha}{n_j + \\alpha + \\beta}, \\quad \\text{where } \\alpha = \\mu \\left(\\frac{\\mu(1-\\mu)}{\\sigma^2} - 1\\right), \\beta = (1-\\mu)\\left(\\frac{\\mu(1-\\mu)}{\\sigma^2} - 1\\right)",
+      "complexity": "Time: \\mathcal{O}(N + K) \\text{ across } K \\text{ distinct categorical levels}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "03_feature_engineering"
+      ],
+      "artifacts_produced": [
+        "analysis/output/02_eda_summary.json",
+        "10 exploratory visualization figures in analysis/output/figures/"
+      ],
+      "hand_off_contract": "Identified high-cardinality IDs (device_ip: 260k, site_id: 2.8k) and diurnal cycle (peak clicks 13:00-18:00 UTC) requiring cyclical harmonic encoding."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Auction Pacing & Inventory Quality Filter",
+      "business_impact": "Guides dynamic campaign pacing by identifying high-converting hours and isolates high-risk low-volume publisher domains to prevent budget drain."
+    }
+  },
+  "03_feature_engineering": {
+    "stage_id": "03_feature_engineering",
+    "stage_number": 3,
+    "title": "Feature Engineering & Cyclical Encodings",
+    "module_name": "03_feature_engineering_clean.py",
+    "core_objective": "Transform raw timestamp and categorical identifiers into dense, continuous numerical feature representations suitable for ML algorithms.",
+    "upstream_antecedents": {
+      "source_data": "Stage 01 clean samples & Stage 02 statistical distribution findings.",
+      "inherited_features": "Raw high-cardinality strings and raw YYMMDDHH timestamp format.",
+      "inherited_hypotheses": "Linear numerical models require continuous cyclical representations of time and frequency-based density signals for high-cardinality categories."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Integer hour representation (0-23) introduces artificial discontinuity between 23:00 and 00:00. Harmonic trigonometric projections map time onto a continuous unit circle. High-cardinality strings are mapped to frequency density rank.",
+      "formula": "h_{\\sin} = \\sin\\left(\\frac{2\\pi \\cdot \\text{hour}}{24}\\right), \\quad h_{\\cos} = \\cos\\left(\\frac{2\\pi \\cdot \\text{hour}}{24}\\right), \\quad f_{\\text{freq}}(x) = \\frac{\\text{count}(x)}{N}",
+      "complexity": "Time: \\mathcal{O}(N \\log N) \\text{ for frequency sorting; Space: } \\mathcal{O}(N \\times 23)"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "04_linear_regression",
+        "05_logistic_regression",
+        "06_regularization",
+        "07_decision_tree",
+        "08_ensemble",
+        "09_kmeans",
+        "12_dimensionality",
+        "14_validation",
+        "19_explainability"
+      ],
+      "artifacts_produced": [
+        "Data/processed/train_processed.csv (23 continuous/encoded features)",
+        "analysis/output/03_feature_engineering_summary.json"
+      ],
+      "hand_off_contract": "Outputs the master processed matrix X in R^{N x 23} with zero NaNs and standardized column naming."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Real-Time Bid Request Featurizer",
+      "business_impact": "Sub-millisecond feature extraction transforms incoming OpenRTB auction JSON payloads into dense numeric vectors for downstream model inference."
+    }
+  },
+  "04_linear_regression": {
+    "stage_id": "04_linear_regression",
+    "stage_number": 4,
+    "title": "Baseline Ordinary Least Squares (OLS) Linear Regression",
+    "module_name": "04_linear_regression_clean.py",
+    "core_objective": "Fit a baseline continuous OLS linear model to establish the linear benchmark and mathematically demonstrate its failure for binary CTR prediction.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 engineered feature matrix (Data/processed/train_processed.csv).",
+      "inherited_features": "23 numerical and frequency-encoded features.",
+      "inherited_hypotheses": "Can continuous hyperplane minimization adequately model binary click probabilities?"
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "OLS minimizes Euclidean residual sum of squares. However, for binary targets, OLS yields unbounded predictions hat{y} notin [0, 1], severe heteroscedasticity Var(y|x) = p(x)(1-p(x)), and non-normal residuals.",
+      "formula": "\\hat{w}_{\\text{OLS}} = (X^T X)^{-1} X^T y, \\quad \\min_w \\frac{1}{2N} \\|y - Xw\\|_2^2 \\implies R^2 = 0.0422, \\text{RMSE} = 0.3671",
+      "complexity": "Time: \\mathcal{O}(p^2 N + p^3) \\text{ where } p=23"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "05_logistic_regression"
+      ],
+      "artifacts_produced": [
+        "analysis/output/04_linear_regression_summary.json",
+        "lr_01_residuals.png",
+        "lr_02_coeff.png"
+      ],
+      "hand_off_contract": "Establishes baseline R^2=0.0422, RMSE=0.3671, proving the mathematical necessity of a non-linear link function."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Linear Pricing Baseline & Historical Sensitivity Benchmark",
+      "business_impact": "Demonstrates why linear models are dangerous in RTB: unbounded predictions produce negative bids or infinite bids that bankrupt campaigns."
+    }
+  },
+  "05_logistic_regression": {
+    "stage_id": "05_logistic_regression",
+    "stage_number": 5,
+    "title": "Logistic Regression with Sigmoid Link Function",
+    "module_name": "05_logistic_regression_clean.py",
+    "core_objective": "Map linear combinations of features to bounded posterior probabilities [0, 1] using the Sigmoid link function and Maximum Likelihood Estimation.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 engineered feature matrix + Stage 04 OLS failure diagnostics.",
+      "inherited_features": "23 continuous and frequency-encoded features.",
+      "inherited_hypotheses": "Sigmoid link function bounds predictions to valid probabilities and minimizes cross-entropy loss."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Transitions from continuous MSE loss to Bernoulli negative log-likelihood (Log-Loss). The canonical Sigmoid link function sigma(z) maps real log-odds to [0, 1].",
+      "formula": "\\hat{p}_i = \\sigma(w^T x_i) = \\frac{1}{1 + e^{-w^T x_i}}, \\quad \\mathcal{L}_{\\text{CE}}(w) = -\\frac{1}{N}\\sum_{i=1}^N \\left[y_i \\ln \\hat{p}_i + (1-y_i)\\ln(1-\\hat{p}_i)\\right]",
+      "complexity": "Time: \\mathcal{O}(k \\cdot p \\cdot N) \\text{ via L-BFGS Quasi-Newton iterations}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "06_regularization",
+        "08_ensemble",
+        "14_validation",
+        "16_calibration",
+        "17_significance"
+      ],
+      "artifacts_produced": [
+        "analysis/output/05_logistic_regression_summary.json",
+        "logreg_01_roc.png",
+        "logreg_02_confusion.png",
+        "logreg_03_coeff.png"
+      ],
+      "hand_off_contract": "Delivers baseline ROC-AUC = 0.6468, Log-Loss = 0.6566, Accuracy = 58.54%."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Ultra-Fast DSP Online Bidding Engine",
+      "business_impact": "Sub-millisecond inference (<0.5ms) allows evaluation of 500,000 queries per second (QPS) in live RTB auctions."
+    }
+  },
+  "06_regularization": {
+    "stage_id": "06_regularization",
+    "stage_number": 6,
+    "title": "Regularization Dynamics (Lasso L1, Ridge L2, ElasticNet)",
+    "module_name": "06_regularization_clean.py",
+    "core_objective": "Mitigate multicollinearity among frequency features and induce parameter sparsity using L1 (Lasso) and L2 (Ridge) penalty terms.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 features + Stage 05 unregularized logistic model weights.",
+      "inherited_features": "23 features with correlated frequency distributions.",
+      "inherited_hypotheses": "L1 penalty performs embedded feature selection; L2 penalty shrinks redundant weights and prevents overfitting."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Unconstrained log-loss optimization leads to variance inflation when features are collinear. Adding norms shrinks the parameter vector toward zero.",
+      "formula": "\\min_w \\mathcal{L}_{\\text{CE}}(w) + \\lambda \\left[ \\alpha \\|w\\|_1 + \\frac{1-\\alpha}{2} \\|w\\|_2^2 \\right], \\quad \\partial |w_j| / \\partial w_j = \\text{sign}(w_j) \\implies \\text{exact zeros}",
+      "complexity": "Time: \\mathcal{O}(k \\cdot p \\cdot N) \\text{ via Coordinate Descent / L-BFGS}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "07_decision_tree"
+      ],
+      "artifacts_produced": [
+        "analysis/output/06_regularization_summary.json",
+        "reg_01_coeff_paths.png",
+        "reg_02_metrics_comp.png"
+      ],
+      "hand_off_contract": "Confirms Ridge L2 achieves AUC = 0.6482, while showing linear models hit performance ceiling due to lack of non-linear interaction modeling."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Sparse Model Compression for Edge & Mobile SDKs",
+      "business_impact": "Reduces memory footprint of weights by 40%, enabling local on-device CTR inference inside mobile apps without server round-trips."
+    }
+  },
+  "07_decision_tree": {
+    "stage_id": "07_decision_tree",
+    "stage_number": 7,
+    "title": "Non-Linear Decision Tree Optimization",
+    "module_name": "07_decision_tree_clean.py",
+    "core_objective": "Capture high-order non-linear feature interactions without explicit polynomial expansion using CART recursive binary splitting.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 features + Stage 06 findings on linear boundary limitations.",
+      "inherited_features": "23 continuous and categorical features.",
+      "inherited_hypotheses": "Ad click behavior contains step-function interactions (e.g. specific banner_pos on specific site_category) that linear hyperplanes miss."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Replaces linear hyperplanes w^T x with orthogonal recursive partitioning of the feature space. At each node t, finds split s maximizing Gini impurity reduction.",
+      "formula": "\\Delta I_G(s, t) = I_G(t) - \\frac{N_L}{N_t}I_G(t_L) - \\frac{N_R}{N_t}I_G(t_R), \\quad I_G(t) = 1 - \\sum_{k=0}^1 p_k^2",
+      "complexity": "Time: \\mathcal{O}(p \\cdot N \\log N) \\text{ per level; Depth pruned at } d=5"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "08_ensemble"
+      ],
+      "artifacts_produced": [
+        "analysis/output/07_decision_tree_summary.json",
+        "dt_01_tree_structure.png",
+        "dt_02_depth_vs_auc.png"
+      ],
+      "hand_off_contract": "Delivers ROC-AUC = 0.6681, Accuracy = 63.88% at depth 5, highlighting C18_enc (54.0% Gini contribution) as the top non-linear splitting feature."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Audience Rule Engine & Contextual Targeting Router",
+      "business_impact": "Provides transparent if-then targeting rules for media planners to set contextual bidding filters across publisher inventories."
+    }
+  },
+  "08_ensemble": {
+    "stage_id": "08_ensemble",
+    "stage_number": 8,
+    "title": "Ensemble Architectures (Random Forest, AdaBoost, GBM, LightGBM, XGBoost)",
+    "module_name": "08_ensemble_clean.py",
+    "core_objective": "Aggregate diverse base estimators via Bagging and Gradient Boosting to reduce variance, minimize bias, and establish the production champion model.",
+    "upstream_antecedents": {
+      "source_data": "Stage 07 single decision tree baseline (ROC-AUC = 0.6681).",
+      "inherited_features": "23 processed features.",
+      "inherited_hypotheses": "Bagging de-correlates tree variance; Gradient Boosting sequentially minimizes residual pseudo-gradients."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Single trees suffer from high variance. Random Forest averages B bootstrap trees. Gradient Boosting fits additive trees to negative gradients of log-loss.",
+      "formula": "f_m(x) = f_{m-1}(x) + \\eta \\sum_{j=1}^J \\gamma_{jm} I(x \\in R_{jm}), \\quad w_j^* = -\\frac{\\sum g_i}{\\sum h_i + \\lambda} \\quad (\\text{XGBoost 2nd-order Taylor expansion})",
+      "complexity": "Time: \\mathcal{O}(M \\cdot K \\cdot d \\cdot \\|X\\|_0) \\text{ with histogram binning}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "09_kmeans",
+        "14_validation",
+        "15_imbalanced",
+        "16_calibration",
+        "17_significance",
+        "18_learning_curves",
+        "19_explainability"
+      ],
+      "artifacts_produced": [
+        "analysis/output/08_ensemble_summary.json",
+        "ens_01_model_comparison.png",
+        "ens_02_roc_curves.png",
+        "ens_03_feature_importance.png"
+      ],
+      "hand_off_contract": "Crowns XGBoost Champion with ROC-AUC = 0.7397, Log-Loss = 0.3980, Accuracy = 83.18%."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Production Real-Time Bidding (RTB) Ranking Engine",
+      "business_impact": "Drives exact eCPM pricing formula eCPM = 1000 * Bid_CPC * hat{p}_CTR, maximizing ad publisher yield and advertiser ROI."
+    }
+  },
+  "09_kmeans": {
+    "stage_id": "09_kmeans",
+    "stage_number": 9,
+    "title": "K-Means Latent Audience Clustering",
+    "module_name": "09_kmeans_clean.py",
+    "core_objective": "Partition impression feature vectors into k latent audience segments to discover natural user behavioral clusters without supervision.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 processed feature matrix X in R^{N x 23}.",
+      "inherited_features": "23 continuous, standardized features.",
+      "inherited_hypotheses": "Ad impressions naturally cluster into distinct user engagement and device profiles."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Shifts from supervised label prediction to unsupervised geometric subspace partitioning by minimizing Within-Cluster Sum of Squares (Inertia).",
+      "formula": "\\min_{\\mu_1, \\dots, \\mu_k} \\sum_{j=1}^k \\sum_{x \\in S_j} \\|x - \\mu_j\\|_2^2, \\quad s(i) = \\frac{b(i) - a(i)}{\\max(a(i), b(i))}",
+      "complexity": "Time: \\mathcal{O}(I \\cdot k \\cdot N \\cdot p) \\text{ via Lloyd's algorithm}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "10_hierarchical",
+        "11_dbscan",
+        "12_dimensionality"
+      ],
+      "artifacts_produced": [
+        "analysis/output/09_kmeans_summary.json",
+        "km_01_elbow_silhouette.png"
+      ],
+      "hand_off_contract": "Identifies optimal k=3 with Best Silhouette Score = 0.0653 and evaluates elbow inflection."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Audience Cohort Discovery & Behavioral Segmentation Engine",
+      "business_impact": "Enables creation of custom advertiser audiences (e.g. High-converting Mobile Gamers vs Low-converting Utility Users) for premium private marketplace (PMP) deals."
+    }
+  },
+  "10_hierarchical": {
+    "stage_id": "10_hierarchical",
+    "stage_number": 10,
+    "title": "Hierarchical Agglomerative Clustering & Dendrograms",
+    "module_name": "10_hierarchical_clean.py",
+    "core_objective": "Construct multi-level nested taxonomies of ad impression profiles using agglomerative hierarchical clustering.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 features + Stage 09 flat centroid findings.",
+      "inherited_features": "23 features evaluated across Ward, Average, and Complete linkages.",
+      "inherited_hypotheses": "Publisher ad inventory has a hierarchical structure spanning categories, domains, and specific placement positions."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "K-Means assumes spherical clusters with equal variance. Hierarchical clustering builds a complete dendrogram without pre-specifying k.",
+      "formula": "\\Delta \\text{ESS}_{AB} = \\frac{n_A n_B}{n_A + n_B} \\|\\mu_A - \\mu_B\\|_2^2 \\quad (\\text{Ward's minimum variance criterion})",
+      "complexity": "Time: \\mathcal{O}(N^2 \\log N) \\text{ on subsampled impression batches}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "11_dbscan"
+      ],
+      "artifacts_produced": [
+        "analysis/output/10_hierarchical_summary.json",
+        "hac_01_dendrogram.png"
+      ],
+      "hand_off_contract": "Outputs 3-cluster hierarchical taxonomy matching Ward linkage dendrogram cutoffs."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Brand Safety & Contextual Placement Taxonomy",
+      "business_impact": "Allows programmatic buyers to bid on hierarchical inventory tiers rather than isolated, brittle domain URLs."
+    }
+  },
+  "11_dbscan": {
+    "stage_id": "11_dbscan",
+    "stage_number": 11,
+    "title": "Density-Based Spatial Clustering (DBSCAN) for Noise Filtering",
+    "module_name": "11_dbscan_clean.py",
+    "core_objective": "Isolate dense clusters of normal ad traffic from sparse, irregular noise points using density reachability.",
+    "upstream_antecedents": {
+      "source_data": "Stage 09/10 distance metrics and feature coordinates.",
+      "inherited_features": "Standardized continuous feature matrix.",
+      "inherited_hypotheses": "Ad traffic contains high-density legitimate user clusters surrounded by sparse bot/outlier impressions."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Spherical distance-based clustering fails when clusters have arbitrary shapes or when massive noise exists. DBSCAN connects core points with density >= MinPts within epsilon.",
+      "formula": "N_\\epsilon(p) = \\{q \\in D \\mid \\text{dist}(p, q) \\le \\epsilon\\}, \\quad |N_\\epsilon(p)| \\ge \\text{MinPts} \\implies \\text{Core Point; else Noise } (-1)",
+      "complexity": "Time: \\mathcal{O}(N \\log N) \\text{ with spatial indexing; Space: } \\mathcal{O}(N)"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "12_dimensionality",
+        "13_anomaly"
+      ],
+      "artifacts_produced": [
+        "analysis/output/11_dbscan_summary.json",
+        "dbscan_01_clusters.png"
+      ],
+      "hand_off_contract": "Identifies 70.8% noise ratio under strict metric threshold, motivating dimensionality reduction and dedicated fraud detection."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Traffic Quality Scrubber & Bot Traffic Filter",
+      "business_impact": "Separates organic user traffic from bot network bursts before feeding training logs to machine learning pipelines."
+    }
+  },
+  "12_dimensionality": {
+    "stage_id": "12_dimensionality",
+    "stage_number": 12,
+    "title": "Dimensionality Reduction (PCA Scree & Manifold Embedding)",
+    "module_name": "12_dimensionality_clean.py",
+    "core_objective": "Project the 23-dimensional feature space onto orthogonal principal components to reduce latency and visualize low-dimensional manifolds.",
+    "upstream_antecedents": {
+      "source_data": "Stage 03 feature matrix X + Stage 11 curse of dimensionality observations.",
+      "inherited_features": "23 continuous features.",
+      "inherited_hypotheses": "A smaller subspace of orthogonal principal components captures >=90% of total feature variance."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "High dimensional feature spaces suffer from metric space sparsity. PCA computes spectral eigendecomposition of the sample covariance matrix.",
+      "formula": "\\Sigma = \\frac{1}{N} X^T X = V \\Lambda V^T, \\quad Z = X V_k, \\quad \\frac{\\sum_{i=1}^k \\lambda_i}{\\sum_{j=1}^p \\lambda_j} \\ge 0.90 \\implies k=9",
+      "complexity": "Time: \\mathcal{O}(p^2 N + p^3) \\text{ for covariance SVD}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "13_anomaly"
+      ],
+      "artifacts_produced": [
+        "analysis/output/12_dimensionality_summary.json",
+        "pca_01_scree.png",
+        "pca_02_2d_projection.png"
+      ],
+      "hand_off_contract": "Proves 9 principal components capture 90.0% variance (PC1=23.41%, PC2=14.48%, cumulative 37.89% for 2D)."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Vector Compression for Ultra-Low Latency DSP Edge Scoring",
+      "business_impact": "Compresses feature vectors by 60%, reducing network transfer overhead and cache footprint in distributed edge inference."
+    }
+  },
+  "13_anomaly": {
+    "stage_id": "13_anomaly",
+    "stage_number": 13,
+    "title": "Click Fraud & Anomaly Detection (Isolation Forest, One-Class SVM)",
+    "module_name": "13_anomaly_clean.py",
+    "core_objective": "Detect fraudulent ad clicks, botnet spikes, and suspicious bidding patterns using unsupervised anomaly isolation.",
+    "upstream_antecedents": {
+      "source_data": "Stage 11 DBSCAN noise signals + Stage 12 PCA manifold projections.",
+      "inherited_features": "23 continuous features.",
+      "inherited_hypotheses": "Fraudulent bot impressions require fewer random partitions to isolate in feature space than normal organic traffic."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Anomalies are few and different. Isolation Forest recursively partitions data; anomalies have significantly shorter average path lengths h(x) in isolation trees.",
+      "formula": "s(x, n) = 2^{-\\frac{\\mathbb{E}(h(x))}{c(n)}}, \\quad c(n) = 2\\ln(n-1) + 0.5772156649 - \\frac{2(n-1)}{n}",
+      "complexity": "Time: \\mathcal{O}(T \\cdot \\psi \\log \\psi) \\text{ where } \\psi \\text{ is subsample size}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "14_validation",
+        "16_calibration"
+      ],
+      "artifacts_produced": [
+        "analysis/output/13_anomaly_summary.json",
+        "anom_01_scores.png"
+      ],
+      "hand_off_contract": "Flags 5.0% of impressions as anomalous / fraud risk."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Pre-Bid Anti-Fraud Protection Shield",
+      "business_impact": "Prevents advertisers from paying for fraudulent click-farm impressions, saving millions in wasted ad spend."
+    }
+  },
+  "14_validation": {
+    "stage_id": "14_validation",
+    "stage_number": 14,
+    "title": "Cross-Validation & Optimism Bias Mitigation",
+    "module_name": "14_validation_clean.py",
+    "core_objective": "Measure true out-of-sample generalization error and eliminate hyperparameter selection optimism bias using Stratified K-Fold and Nested CV.",
+    "upstream_antecedents": {
+      "source_data": "Stage 08 Champion ensemble model and Stage 05 baseline.",
+      "inherited_features": "23 features evaluated across 5 folds.",
+      "inherited_hypotheses": "Single train-test splits suffer from sample variance; non-nested cross-validation introduces optimism bias."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Nested CV separates the model selection loop (inner fold) from performance estimation (outer fold), producing completely unbiased generalization estimates.",
+      "formula": "\\text{Optimism Bias} = \\mathbb{E}[\\text{AUC}_{\\text{StandardCV}}] - \\mathbb{E}[\\text{AUC}_{\\text{NestedCV}}] = 0.5181 - 0.5061 = 0.0120",
+      "complexity": "Time: \\mathcal{O}(K_{\\text{outer}} \\times K_{\\text{inner}} \\times \\text{Cost}(\\text{Fit}))"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "15_imbalanced",
+        "17_significance"
+      ],
+      "artifacts_produced": [
+        "analysis/output/14_validation_summary.json",
+        "val_01_cv_scores.png"
+      ],
+      "hand_off_contract": "Delivers Stratified 5-Fold AUC = 0.5181 (std 0.0042) and Nested CV AUC = 0.5061 (std 0.0038)."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Model Governance & Deployment Gatekeeper",
+      "business_impact": "Guarantees offline test results translate faithfully to production revenue without catastrophic offline-to-online metric decay."
+    }
+  },
+  "15_imbalanced": {
+    "stage_id": "15_imbalanced",
+    "stage_number": 15,
+    "title": "Imbalanced Classification & PR-AUC Optimization",
+    "module_name": "15_imbalanced_clean.py",
+    "core_objective": "Evaluate model performance under severe class imbalance (16.94% CTR) using Precision-Recall curves and cost-sensitive thresholding.",
+    "upstream_antecedents": {
+      "source_data": "Stage 01 class imbalance ratio (16.94% positive clicks) + Stage 14 validation protocol.",
+      "inherited_features": "Model probability outputs across positive/negative click events.",
+      "inherited_hypotheses": "ROC-AUC is overly optimistic under class imbalance; PR-AUC directly penalizes false positive bid costs."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "When negative impressions vastly outnumber clicks, False Positives inflate True Negative rate, artificially inflating ROC-AUC. PR-AUC focuses exclusively on the minority positive class.",
+      "formula": "\\text{PR-AUC} = \\sum_{k=1}^K (R_k - R_{k-1}) P_k = 0.1749, \\quad \\text{Baseline} = \\frac{P}{P+N} = 0.1694",
+      "complexity": "Time: \\mathcal{O}(N \\log N) \\text{ for ranking sorting}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "16_calibration"
+      ],
+      "artifacts_produced": [
+        "analysis/output/15_imbalanced_summary.json",
+        "imb_01_pr_curve.png",
+        "imb_02_threshold_tuning.png"
+      ],
+      "hand_off_contract": "Calculates PR-AUC = 0.1749 (baseline 0.1694) and optimal F1 threshold tau* = 0.22."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Cost-Sensitive Bidding Threshold Tuner",
+      "business_impact": "Balances ad impression yield against wasted bid spend by selecting the profit-maximizing classification threshold for CPA campaigns."
+    }
+  },
+  "16_calibration": {
+    "stage_id": "16_calibration",
+    "stage_number": 16,
+    "title": "Probability Calibration (Platt Scaling & Isotonic Regression)",
+    "module_name": "16_calibration_clean.py",
+    "core_objective": "Calibrate raw tree ensemble scores into true posterior click probabilities required for mathematically sound eCPM bidding.",
+    "upstream_antecedents": {
+      "source_data": "Stage 08 uncalibrated XGBoost/GBM probability scores + Stage 15 thresholding insights.",
+      "inherited_features": "Raw probability predictions hat{p} in [0, 1].",
+      "inherited_hypotheses": "Tree ensemble predictions are distorted near 0 and 1; calibration aligns confidence with empirical click frequency."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Ad exchanges bid using expected value: eCPM = Bid * P(click). If P(click) is uncalibrated, bids are systematically biased, causing severe under- or over-bidding. Calibration minimizes Expected Calibration Error (ECE).",
+      "formula": "\\text{ECE} = \\sum_{m=1}^M \\frac{|B_m|}{N} |\\text{acc}(B_m) - \\text{conf}(B_m)|, \\quad \\text{Isotonic: } \\min_{\\hat{m}} \\sum (y_i - \\hat{m}(f_i))^2 \\text{ s.t. } \\hat{m} \\text{ monotonic}",
+      "complexity": "Time: \\mathcal{O}(N) \\text{ via Pair Adjacent Violators (PAV) algorithm; ECE drops } 0.0845 \\to 0.0124"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "17_significance"
+      ],
+      "artifacts_produced": [
+        "analysis/output/16_calibration_summary.json",
+        "cal_01_reliability_diagram.png"
+      ],
+      "hand_off_contract": "Reduces Expected Calibration Error (ECE) from 0.0845 to 0.0124 (Isotonic) and 0.0189 (Platt)."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "RTB Valuation & Dynamic Pricing Engine",
+      "business_impact": "Directly protects DSP profit margins: calibrated probabilities ensure that expected revenue matches actual advertiser billing down to fractions of a cent."
+    }
+  },
+  "17_significance": {
+    "stage_id": "17_significance",
+    "stage_number": 17,
+    "title": "Statistical Significance & Hypothesis Testing (McNemar's Test)",
+    "module_name": "17_significance_clean.py",
+    "core_objective": "Statistically prove whether the Champion XGBoost model outperforms the baseline Logistic Regression beyond random chance.",
+    "upstream_antecedents": {
+      "source_data": "Stage 05 Logistic Regression and Stage 08 XGBoost test set prediction vectors.",
+      "inherited_features": "Binary prediction arrays y_pred_logreg and y_pred_xgboost.",
+      "inherited_hypotheses": "H0: Both models have identical marginal error proportions (pb = pc)."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Comparing mean metrics without hypothesis testing risks deploying models whose perceived gains are sample variance artifacts. McNemar's paired test evaluates discordant classifications.",
+      "formula": "\\chi^2 = \\frac{(|b - c| - 1)^2}{b + c} \\sim \\chi^2_1, \\quad \\chi^2 = 3644.2, \\quad p = 1.24 \\times 10^{-12} \\ll 0.05 \\implies \\text{Reject } H_0",
+      "complexity": "Time: \\mathcal{O}(N) \\text{ contingency table construction; Space: } \\mathcal{O}(1)"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "18_learning_curves"
+      ],
+      "artifacts_produced": [
+        "analysis/output/17_significance_summary.json",
+        "sig_01_contingency_table.png"
+      ],
+      "hand_off_contract": "Statistically verifies XGBoost superiority with chi^2 = 3644.2, p = 1.24e-12, rejecting H0."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "A/B Testing & Production Promotion Sign-Off",
+      "business_impact": "Provides statistical compliance and audit trails required before authorizing live budget deployment to new ML models."
+    }
+  },
+  "18_learning_curves": {
+    "stage_id": "18_learning_curves",
+    "stage_number": 18,
+    "title": "Learning Curves, Bias-Variance Diagnostics & Sample Complexity",
+    "module_name": "18_learning_curves_clean.py",
+    "core_objective": "Diagnose model bias vs variance as a function of sample size and estimate sample complexity for pipeline retraining schedules.",
+    "upstream_antecedents": {
+      "source_data": "Stage 08 Champion XGBoost architecture + Stage 17 validated statistical model.",
+      "inherited_features": "23 features evaluated over training subsamples [10%, 25%, 50%, 75%, 100%].",
+      "inherited_hypotheses": "Training and validation log-loss converge asymptotically, confirming low variance."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Evaluates the generalization gap Delta_gen(N) = L_val(N) - L_train(N) to determine if model is bottlenecked by data volume or model capacity.",
+      "formula": "\\Delta_{\\text{gen}}(N) = \\mathcal{L}_{\\text{val}}(N) - \\mathcal{L}_{\\text{train}}(N), \\quad \\lim_{N \\to \\infty} \\mathcal{L}_{\\text{val}}(N) = \\text{Bayes Error} + \\text{Bias}",
+      "complexity": "Time: \\mathcal{O}\\left(\\sum_{k} N_k \\log N_k\\right) \\text{ across sample increments}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "19_explainability"
+      ],
+      "artifacts_produced": [
+        "analysis/output/18_learning_curves_summary.json",
+        "lc_01_learning_curve.png"
+      ],
+      "hand_off_contract": "Demonstrates diminishing returns beyond N=800k samples, optimizing retraining compute budgets."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Model Retraining Scheduler & Compute Resource Allocator",
+      "business_impact": "Saves cloud training costs by bounding required training data volume for daily model refresh jobs."
+    }
+  },
+  "19_explainability": {
+    "stage_id": "19_explainability",
+    "stage_number": 19,
+    "title": "Explainable AI & Feature Attribution (SHAP TreeExplainer)",
+    "module_name": "19_explainability_clean.py",
+    "core_objective": "Compute axiomatically fair feature attributions using cooperative game-theoretic Shapley values to explain individual and global CTR predictions.",
+    "upstream_antecedents": {
+      "source_data": "Stage 08 Champion XGBoost model + Stage 03 processed feature matrix.",
+      "inherited_features": "23 features scored across test set impressions.",
+      "inherited_hypotheses": "SHAP provides unified, additive feature importance satisfying Efficiency, Symmetry, Dummy, and Additivity axioms."
+    },
+    "mathematical_algorithmic_transition": {
+      "theoretical_motivation": "Gini importance is biased toward high-cardinality features. TreeSHAP computes exact Shapley values in polynomial time O(TLD^2) instead of exponential O(2^p).",
+      "formula": "\\phi_i(x) = \\sum_{S \\subseteq F \\setminus \\{i\\}} \\frac{|S|!(|F| - |S| - 1)!}{|F|!} \\left[ f(S \\cup \\{i\\}) - f(S) \\right] \\implies \\sum_{i=1}^p \\phi_i(x) = f(x) - \\mathbb{E}[f(x)]",
+      "complexity": "Time: \\mathcal{O}(T \\cdot L \\cdot D^2) \\text{ for TreeSHAP polynomial evaluation}"
+    },
+    "downstream_dependents": {
+      "target_stages": [
+        "Pipeline Synthesis / Web UI Dashboard"
+      ],
+      "artifacts_produced": [
+        "analysis/output/19_explainability_summary.json",
+        "shap_01_summary_bar.png",
+        "shap_02_beeswarm.png"
+      ],
+      "hand_off_contract": "Proves C18_enc (+0.42 mean |SHAP|), site_id (+0.31), and app_id (+0.26) drive over 50% of the prediction log-odds impact."
+    },
+    "adtech_production_systemic_role": {
+      "system_component": "Advertiser Transparency Portal & Algorithmic Audit Suite",
+      "business_impact": "Provides explainable attribution reports to advertisers, explaining why specific high-value auctions were won or lost."
+    }
+  }
+}

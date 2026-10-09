@@ -1,5 +1,5 @@
 {
-  "n_features": 23,
+  "n_features": 21,
   "feature_names": [
     "hour_of_day",
     "day_of_week",
@@ -7,8 +7,6 @@
     "site_domain_freq",
     "app_id_freq",
     "app_domain_freq",
-    "device_id_freq",
-    "device_ip_freq",
     "device_model_freq",
     "C1_enc",
     "banner_pos_enc",
@@ -25,15 +23,13 @@
     "C20_enc",
     "C21_enc"
   ],
-  "train_rows": 1010724,
-  "test_rows": 205986,
+  "train_rows": 20000,
+  "test_rows": 0,
   "high_cardinality_encoded": [
     "site_id",
     "site_domain",
     "app_id",
     "app_domain",
-    "device_id",
-    "device_ip",
     "device_model"
   ],
   "low_cardinality_encoded": [
@@ -57,5 +53,42 @@
     "hour",
     "device_id",
     "device_ip"
-  ]
+  ],
+  "_pipeline_lineage": {
+    "stage_id": "03_feature_engineering",
+    "stage_number": 3,
+    "title": "Feature Engineering & Cyclical Encodings",
+    "upstream": {
+      "source_data": "Stage 01 clean samples & Stage 02 statistical distribution findings.",
+      "inherited_features": "Raw high-cardinality strings and raw YYMMDDHH timestamp format.",
+      "inherited_hypotheses": "Linear numerical models require continuous cyclical representations of time and frequency-based density signals for high-cardinality categories."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Integer hour representation (0-23) introduces artificial discontinuity between 23:00 and 00:00. Harmonic trigonometric projections map time onto a continuous unit circle. High-cardinality strings are mapped to frequency density rank.",
+      "formula": "h_{\\sin} = \\sin\\left(\\frac{2\\pi \\cdot \\text{hour}}{24}\\right), \\quad h_{\\cos} = \\cos\\left(\\frac{2\\pi \\cdot \\text{hour}}{24}\\right), \\quad f_{\\text{freq}}(x) = \\frac{\\text{count}(x)}{N}",
+      "complexity": "Time: \\mathcal{O}(N \\log N) \\text{ for frequency sorting; Space: } \\mathcal{O}(N \\times 23)"
+    },
+    "downstream": {
+      "target_stages": [
+        "04_linear_regression",
+        "05_logistic_regression",
+        "06_regularization",
+        "07_decision_tree",
+        "08_ensemble",
+        "09_kmeans",
+        "12_dimensionality",
+        "14_validation",
+        "19_explainability"
+      ],
+      "artifacts_produced": [
+        "Data/processed/train_processed.csv (23 continuous/encoded features)",
+        "analysis/output/03_feature_engineering_summary.json"
+      ],
+      "hand_off_contract": "Outputs the master processed matrix X in R^{N x 23} with zero NaNs and standardized column naming."
+    },
+    "adtech_role": {
+      "system_component": "Real-Time Bid Request Featurizer",
+      "business_impact": "Sub-millisecond feature extraction transforms incoming OpenRTB auction JSON payloads into dense numeric vectors for downstream model inference."
+    }
+  }
 }

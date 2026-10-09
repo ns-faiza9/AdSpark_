@@ -11,5 +11,34 @@
     "average": 5.6308,
     "ward": 11.5383
   },
-  "cluster_structure": "4 clear sub-groups discovered via Ward linkage"
+  "cluster_structure": "4 clear sub-groups discovered via Ward linkage",
+  "_pipeline_lineage": {
+    "stage_id": "10_hierarchical",
+    "stage_number": 10,
+    "title": "Hierarchical Agglomerative Clustering & Dendrograms",
+    "upstream": {
+      "source_data": "Stage 03 features + Stage 09 flat centroid findings.",
+      "inherited_features": "23 features evaluated across Ward, Average, and Complete linkages.",
+      "inherited_hypotheses": "Publisher ad inventory has a hierarchical structure spanning categories, domains, and specific placement positions."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "K-Means assumes spherical clusters with equal variance. Hierarchical clustering builds a complete dendrogram without pre-specifying k.",
+      "formula": "\\Delta \\text{ESS}_{AB} = \\frac{n_A n_B}{n_A + n_B} \\|\\mu_A - \\mu_B\\|_2^2 \\quad (\\text{Ward's minimum variance criterion})",
+      "complexity": "Time: \\mathcal{O}(N^2 \\log N) \\text{ on subsampled impression batches}"
+    },
+    "downstream": {
+      "target_stages": [
+        "11_dbscan"
+      ],
+      "artifacts_produced": [
+        "analysis/output/10_hierarchical_summary.json",
+        "hac_01_dendrogram.png"
+      ],
+      "hand_off_contract": "Outputs 3-cluster hierarchical taxonomy matching Ward linkage dendrogram cutoffs."
+    },
+    "adtech_role": {
+      "system_component": "Brand Safety & Contextual Placement Taxonomy",
+      "business_impact": "Allows programmatic buyers to bid on hierarchical inventory tiers rather than isolated, brittle domain URLs."
+    }
+  }
 }

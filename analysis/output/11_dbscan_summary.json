@@ -3,5 +3,35 @@
   "min_samples": 5,
   "estimated_clusters": 5,
   "noise_points": 708,
-  "noise_percentage": 70.8
+  "noise_percentage": 70.8,
+  "_pipeline_lineage": {
+    "stage_id": "11_dbscan",
+    "stage_number": 11,
+    "title": "Density-Based Spatial Clustering (DBSCAN) for Noise Filtering",
+    "upstream": {
+      "source_data": "Stage 09/10 distance metrics and feature coordinates.",
+      "inherited_features": "Standardized continuous feature matrix.",
+      "inherited_hypotheses": "Ad traffic contains high-density legitimate user clusters surrounded by sparse bot/outlier impressions."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Spherical distance-based clustering fails when clusters have arbitrary shapes or when massive noise exists. DBSCAN connects core points with density >= MinPts within epsilon.",
+      "formula": "N_\\epsilon(p) = \\{q \\in D \\mid \\text{dist}(p, q) \\le \\epsilon\\}, \\quad |N_\\epsilon(p)| \\ge \\text{MinPts} \\implies \\text{Core Point; else Noise } (-1)",
+      "complexity": "Time: \\mathcal{O}(N \\log N) \\text{ with spatial indexing; Space: } \\mathcal{O}(N)"
+    },
+    "downstream": {
+      "target_stages": [
+        "12_dimensionality",
+        "13_anomaly"
+      ],
+      "artifacts_produced": [
+        "analysis/output/11_dbscan_summary.json",
+        "dbscan_01_clusters.png"
+      ],
+      "hand_off_contract": "Identifies 70.8% noise ratio under strict metric threshold, motivating dimensionality reduction and dedicated fraud detection."
+    },
+    "adtech_role": {
+      "system_component": "Traffic Quality Scrubber & Bot Traffic Filter",
+      "business_impact": "Separates organic user traffic from bot network bursts before feeding training logs to machine learning pipelines."
+    }
+  }
 }

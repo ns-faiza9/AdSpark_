@@ -1,5 +1,5 @@
 column,dtype
-id,float64
+id,int64
 click,int64
 hour,int64
 C1,int64

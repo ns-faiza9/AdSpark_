@@ -18,5 +18,36 @@
     "7": 0.0602,
     "8": 0.0614
   },
-  "best_silhouette": 0.0653
+  "best_silhouette": 0.0653,
+  "_pipeline_lineage": {
+    "stage_id": "09_kmeans",
+    "stage_number": 9,
+    "title": "K-Means Latent Audience Clustering",
+    "upstream": {
+      "source_data": "Stage 03 processed feature matrix X in R^{N x 23}.",
+      "inherited_features": "23 continuous, standardized features.",
+      "inherited_hypotheses": "Ad impressions naturally cluster into distinct user engagement and device profiles."
+    },
+    "mathematical_transition": {
+      "theoretical_motivation": "Shifts from supervised label prediction to unsupervised geometric subspace partitioning by minimizing Within-Cluster Sum of Squares (Inertia).",
+      "formula": "\\min_{\\mu_1, \\dots, \\mu_k} \\sum_{j=1}^k \\sum_{x \\in S_j} \\|x - \\mu_j\\|_2^2, \\quad s(i) = \\frac{b(i) - a(i)}{\\max(a(i), b(i))}",
+      "complexity": "Time: \\mathcal{O}(I \\cdot k \\cdot N \\cdot p) \\text{ via Lloyd's algorithm}"
+    },
+    "downstream": {
+      "target_stages": [
+        "10_hierarchical",
+        "11_dbscan",
+        "12_dimensionality"
+      ],
+      "artifacts_produced": [
+        "analysis/output/09_kmeans_summary.json",
+        "km_01_elbow_silhouette.png"
+      ],
+      "hand_off_contract": "Identifies optimal k=3 with Best Silhouette Score = 0.0653 and evaluates elbow inflection."
+    },
+    "adtech_role": {
+      "system_component": "Audience Cohort Discovery & Behavioral Segmentation Engine",
+      "business_impact": "Enables creation of custom advertiser audiences (e.g. High-converting Mobile Gamers vs Low-converting Utility Users) for premium private marketplace (PMP) deals."
+    }
+  }
 }
